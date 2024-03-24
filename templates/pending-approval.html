@@ -1,0 +1,53 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <title>Account Pending Approval</title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+</head>
+<body>
+
+<div class="container">
+    {# Show any messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'modal' in message.tags %}
+                <script>
+                    {# use the errorDialog but override it to make the 'Ok' button redirect back to {% url 'login' %} #}
+                    swal({
+                        title: '{{ message }}',
+                        icon: 'error',
+                        button: 'Go to Login',
+                    }).then((value) => {
+                        window.location.href = '{% url 'login' %}';
+                    });
+                </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'toast' in message.tags %}
+                <script>
+                    toast = new Toast('{{ message }}');
+                    toast.show();
+                </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+</body>
+</html>

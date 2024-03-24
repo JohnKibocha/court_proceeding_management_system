@@ -1,0 +1,109 @@
+<mxfile host="Electron" modified="2024-03-19T21:48:32.719Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.0.4 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="0IBYRkDnCv8R-Bn3erjW" version="24.0.4" type="device">
+  <diagram name="Page-1" id="LmLDPTJSlNjx0tjyc8Ea">
+    <mxGraphModel dx="2294" dy="873" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="YrLNheeBbMMLsychZmue-3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="730" width="410" height="1770" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-6" value="Admin" style="shape=umlActor;html=1;verticalLabelPosition=bottom;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="-100" y="1100" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-7" value="Clerk" style="shape=umlActor;html=1;verticalLabelPosition=bottom;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="-100" y="1850" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-8" value="Participant" style="shape=umlActor;html=1;verticalLabelPosition=bottom;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1420" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-10" value="Create Account" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="770" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-11" value="Create, Update, Delete Users" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="880" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-12" value="View Users" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="990" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-13" value="Create, Update, Delete Cases" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1360" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-14" value="View Cases" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1485" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-15" value="Create Update, Delete Case Documents" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1610" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-16" value="View Case Document" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1720" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-17" value="Create, Update, Delete Invoices" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1830" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-18" value="View Invoices" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1943.5" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-19" value="Make Payments" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="2070" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-20" value="View Payments" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="2170" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-21" value="Create Payment Reciepts" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="2270" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-22" value="Track Cases" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="2390" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-23" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-10">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1110" as="sourcePoint" />
+            <mxPoint x="20" y="1080" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-24" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-11">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1110" as="sourcePoint" />
+            <mxPoint x="322.5" y="910" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-25" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-12">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1110" as="sourcePoint" />
+            <mxPoint x="322.5" y="1020" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-26" value="Create, Update, Delete Courts" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1110" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-27" value="View Courts" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="322.5" y="1235" width="205" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-28" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-26">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1120" as="sourcePoint" />
+            <mxPoint x="322.5" y="1040" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-29" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-27">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1120" as="sourcePoint" />
+            <mxPoint x="333" y="1151" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-30" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-13">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1870" as="sourcePoint" />
+            <mxPoint x="312" y="1880" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YrLNheeBbMMLsychZmue-31" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="YrLNheeBbMMLsychZmue-14">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-60" y="1870" as="sourcePoint" />
+            <mxPoint x="332" y="1405" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

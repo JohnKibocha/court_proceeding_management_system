@@ -1,0 +1,125 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %}
+        Dashboard
+    {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+    <style>
+        .card-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background-color: #333;
+            color: #fff;
+            border-radius: 10px;
+            margin: 10px;
+            padding: 20px;
+            flex: 1 0 21%; /* this will make the cards responsive */
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<article aria-label="main-content">
+
+    {% block search_container %}
+
+    {% endblock %}
+
+    {% block title %}
+        Dashboard
+    {% endblock %}
+
+    {% block content %}
+        {% if user_info.role == 'admin' %}
+            <div class="card-container">
+                <div class="card" onclick="location.href='{% url 'admin-manage-clerk' %}'">
+                    <h5 class="card-title">Clerks</h5>
+                    <p class="card-text">Total No. of Clerks: {{ clerks.count }}</p>
+                </div>
+                <div class="card" onclick="location.href='{% url 'admin-manage-judge' %}'">
+                    <h5 class="card-title">Judges</h5>
+                    <p class="card-text">Total No. of Judges: {{ judges.count }}</p>
+                </div>
+                <div class="card" onclick="location.href='{% url 'admin-manage-court' %}'">
+                    <h5 class="card-title">Courts</h5>
+                    <p class="card-text">Total No. of Courts: {{ courts.count }}</p>
+                </div>
+            </div>
+        {% elif user_info.role == 'clerk' %}
+            {% comment %}
+            <div class="card-container">
+                <div class="card" onclick="location.href='{% url 'clerk-manage-case' %}'">
+                    <h5 class="card-title text-center">Cases</h5>
+                    <p class="card-text text-center">Total cases: {{ cases.count }}</p>
+                </div>
+                <div class="card" onclick="location.href='{% url 'clerk-manage-participant' %}'">
+                    <h5 class="card-title text-center">Litigants</h5>
+                    <p class="card-text text-center">Total Litigants: {{ participants.count }}</p>
+                </div>
+                <div class="card" onclick="location.href='{% url 'clerk-manage-invoice' %}'">
+                    <h5 class="card-title text-center">Invoices</h5>
+                    <p class="card-text text-center">Total invoices: {{ invoices.count }}</p>
+                </div>
+            <div class="card" onclick="location.href='{% url 'clerk-manage-payment' %}'">
+                <h5 class="card-title text-center">Payments</h5>
+                <p class="card-text text-center">Total payments: {{ payments.count }}</p>
+            </div>
+            {% endcomment %}
+        {% endif %}
+    {% endblock %}
+</article>
+
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+            window.location = card.getAttribute('data-url');
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Courtix">
+    <meta name="keywords" content="Courtix, court, courtix, courtix, courtix">
+    <meta name="author" content="John Kibocha">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Courtix">
+    <meta property="og:description" content="Courtix">
+    <meta property="og:image" content="{% static 'icons/courtix_logo.png' %}">
+    <meta property="og:url" content="http://localhost:8000">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Courtix">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="en_GB">
+    <title>Create Court</title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+    <script src="{% static 'scripts/main.js' %}"></script>
+</head>
+<body>
+
+<main>
+    <section class="form-container">
+        <header>Create New Court</header>
+        <form action="{% url 'admin-create-court' %}" method="post" class="form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="container image-container">
+                <img id="output" class="image-view" width="200" src="{% static 'images/default_court.png' %}" style="border-radius: 50%"/>
+            </div>
+            <input type="file" id="court_logo" name="court_logo" accept="image/*" onchange="loadFile(event)"
+                   class="form-field form-font">
+
+            <div class="input-box">
+                <label>Court Name</label>
+                <input type="text" name="name" placeholder="Enter Court name" required
+                       class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Court Email</label>
+                <input type="email" name="court_email" placeholder="Enter email address" required
+                       class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Court Location</label>
+                <select name="location" class="form-field form-dropdown form-font">
+                <option value="" disabled selected>Select Court Location</option>
+                    {% for location in court_locations %}
+                        <option value="{{ location.0 }}">{{ location.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>Court Phone</label>
+                <input type="number" name="court_phone" placeholder="Enter phone number" required
+                       class="form-field form-number form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Court Type</label>
+                <select name="court_type" class="form-field form-dropdown form-font">
+                    <option value="" disabled selected>Select Court Type</option>
+                    {% for court in court_types %}
+                        <option value="{{ court.0 }}">{{ court.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Address -->
+
+            <div class="input-box">
+                <label>Postal Code</label>
+                <input type="text" name="postal_code" placeholder="Enter postal code" required
+                       class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Town/City</label>
+                <input type="text" name="town_city" placeholder="Enter town/city" required
+                       class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Building Name</label>
+                <input type="text" name="building_name" placeholder="Enter building name" class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Floor Number</label>
+                <input type="text" name="floor_number" placeholder="Enter floor number" class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Street Name</label>
+                <input type="text" name="street_name" placeholder="Enter street name" class="form-field form-font"/>
+            </div>
+            <button class="form-field form-submit form-font">Submit</button>
+        </form>
+    </section>
+</main>
+
+
+<div class="toast-container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'toast' in message.tags %}
+                <script>
+                    toast = new Toast('{{ message }}');
+                    toast.show();
+                </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+<script>
+    var loadFile = function (event) {
+        var output = document.getElementById('output');
+        output.src = URL.createObjectURL(event.target.files[0]);
+        output.onload = function () {
+            {# set the image to 50% border radius #}
+            output.style.borderRadius = '50%';
+            URL.revokeObjectURL(output.src) // free memory
+        }
+    };
+</script>
+</body>
+</html>

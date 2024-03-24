@@ -1,0 +1,332 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Courtix">
+    <meta name="keywords" content="Courtix, court, courtix, courtix, courtix">
+    <meta name="author" content="John Kibocha">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Courtix">
+    <meta property="og:description" content="Courtix">
+    <meta property="og:image" content="{% static 'icons/courtix_logo.png' %}">
+    <meta property="og:url" content="http://localhost:8000">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Courtix">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="en_GB">
+    <title>Create Case</title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+    <script src="{% static 'scripts/main.js' %}"></script>
+</head>
+<body>
+
+
+<main>
+    <section class="form-container">
+        <header>Create New Case</header>
+        <form action="{% url 'clerk-create-case' %}" method="post" class="form">
+            {% csrf_token %}
+
+            <div class="input-box">
+                <label>Case Name</label>
+                <input type="text" name="case_name" placeholder="Plaintiff v Defendant" required
+                       class="form-field form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Case Type</label>
+                <select name="case_type" class="form-field form-dropdown form-font">
+                    <option hidden>Case Type(Select the type of case to add)</option>
+                    <option value="civil" onclick="caseDescription()">Civil Case</option>
+                    <option value="criminal" onclick="caseDescription()">Criminal Case</option>
+                    <option value="family" onclick="caseDescription()">Family Case</option>
+                    <option value="land" onclick="caseDescription()">Land Case</option>
+                    <option value="commercial" onclick="caseDescription()">Commercial Case</option>
+                    <option value="labour" onclick="caseDescription()">Labour Case</option>
+                    <option value="constitutional" onclick="caseDescription()">Constitutional Case</option>
+                    <option value="environmental" onclick="caseDescription()">Environmental Case</option>
+                    <option value="appeal" onclick="caseDescription()">Appeal Case</option>
+                    <option value="miscellaneous" onclick="caseDescription()">Miscalleneous</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>Court</label>
+                <select name="court" class="form-field form-dropdown form-font">
+                    <option value="" disabled selected>Select a Court</option>
+                    {% for court in court_objects %}
+                        <option value="{{ court.id }}">{{ court.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>Case Description</label>
+                <textarea name="case_description" placeholder="Enter Case description" required
+                          class="form-field form-font"></textarea>
+            </div>
+
+            <div class="input-box">
+                <label>Case Status</label>
+                <select name="case_status" class="form-field form-dropdown form-font">
+                    <option hidden>Case Status(Select the stage the case is in)</option>
+                    <option value="pending">Pending</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="concluded">Concluded</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>Date Filed</label>
+                <input type="date" name="date_filed" required
+                       class="form-field form-date form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Hearing Date</label>
+                <input type="date" name="date_hearing" required
+                       class="form-field form-date form-font"/>
+            </div>
+
+            <div class="input-box">
+                <label>Relief Sought</label>
+                <textarea name="relief_sought" placeholder="Enter the relief sought by the parties" required
+                          class="form-field form-font"></textarea>
+            </div>
+
+            <div class="input-box">
+                <label>Final Court Decision</label>
+                <select name="decision" class="form-field form-dropdown form-font">
+                    <option value="" disabled selected>Select the final decision of the court</option>
+                    {% for decision in decisions %}
+                        <option value="{{ decision.0 }}">{{ decision.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>Plaintiffs</label>
+                {% for i in '1234' %}
+                    <select name="plaintiffs" class="form-field form-dropdown form-font">
+                        <option value="" disabled selected>Select a Plaintiff</option>
+                        {% for plaintiff in plaintiffs %}
+                            <option value="{{ plaintiff.id }}"
+                                    onclick="roleDescription()">{{ plaintiff.first_name }} {{ plaintiff.last_name }}
+                                ({{ plaintiff.role }})
+                            </option>
+                        {% endfor %}
+                        {% for lawyer in lawyers %}
+                            <option value="{{ lawyer.id }}"
+                                    onclick="roleDescription()">{{ lawyer.first_name }} {{ lawyer.last_name }}
+                                ({{ lawyer.role }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+            </div>
+
+            <div class="input-box">
+                <label>Defendant</label>
+                {% for i in '1234' %}
+                    <select name="defendants" class="form-field form-dropdown form-font">
+                        <option value="" disabled selected>Select a Defendant</option>
+                        {% for defendant in defendants %}
+                            <option value="{{ defendant.id }}"
+                                    onclick="roleDescription()">{{ defendant.first_name }} {{ defendant.last_name }}
+                                ({{ defendant.role }})
+                            </option>
+                        {% endfor %}
+                        {% for lawyer in lawyers %}
+                            <option value="{{ lawyer.id }}"
+                                    onclick="roleDescription()">{{ lawyer.first_name }} {{ lawyer.last_name }}
+                                ({{ lawyer.role }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+            </div>
+
+            <!-- Judges -->
+            <div class="input-box">
+                <label>Judges</label>
+                {% for i in '1234' %}
+                    <select name="judges" class="form-field form-dropdown form-font">
+                        <option value="" disabled selected>Select a Judge</option>
+                        {% for judge in judges %}
+                            <option value="{{ judge.id }}"
+                                    onclick="roleDescription()">{{ judge.first_name }} {{ judge.last_name }}
+                                ({{ judge.role }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+            </div>
+
+            <!-- Clerks -->
+            <div class="input-box">
+                <label>Clerks</label>
+                {% for i in '1234' %}
+                    <select name="clerks" class="form-field form-dropdown form-font">
+                        <option value="" disabled selected>Select a Clerk</option>
+                        {% for clerk in clerks %}
+                            <option value="{{ clerk.id }}"
+                                    onclick="roleDescription()">{{ clerk.first_name }} {{ clerk.last_name }}
+                                ({{ clerk.role }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+            </div>
+
+            <!-- Amicus -->
+            <div class="input-box">
+                <label>Amicus</label>
+                {% for i in '1234' %}
+                    <select name="amicus" class="form-field form-dropdown form-font">
+                        <option value="" disabled selected>Select a Friend of the Court</option>
+                        {% for amicus in amicus %}
+                            <option value="{{ amicus.id }}"
+                                    onclick="roleDescription()">{{ amicus.first_name }} {{ amicus.last_name }}
+                                ({{ amicus.role }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+            </div>
+
+            <!-- Observers -->
+            <div class="input-box">
+                <label>Observers</label>
+                {% for i in '1234' %}
+                    <select name="observers" class="form-field form-dropdown form-font">
+                        <option value="" disabled selected>Select an Observer</option>
+                        {% for observer in observers %}
+                            <option value="{{ observer.id }}"
+                                    onclick="roleDescription()">{{ observer.first_name }} {{ observer.last_name }}
+                                ({{ observer.role }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endfor %}
+            </div>
+
+            <button class="form-field form-submit form-font">Submit</button>
+        </form>
+    </section>
+</main>
+
+
+<div class="toast-container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'toast' in message.tags %}
+                <script>
+                    toast = new Toast('{{ message }}');
+                    toast.show();
+                </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+<script>
+    var loadFile = function (event) {
+        var output = document.getElementById('output');
+        output.src = URL.createObjectURL(event.target.files[0]);
+        output.onload = function () {
+            {# set the image to 50% border radius #}
+            output.style.borderRadius = '50%';
+            URL.revokeObjectURL(output.src) // free memory
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelector('form').addEventListener('submit', function (e) {
+            // Phone number validation
+            var phoneNumberInput = document.querySelector('input[name="phone_number"]');
+            if (!isValidPhoneNumber(phoneNumberInput.value)) {
+                alert('Invalid phone number format. It should be in the format: 0123456789 or 0712345678.');
+                e.preventDefault();
+                return;
+            }
+
+            // National ID validation
+            var nationalIdInput = document.querySelector('input[name="national_id"]');
+            if (!isValidNationalId(nationalIdInput.value)) {
+                alert('National ID must be 8-13 digits.');
+                e.preventDefault();
+
+            }
+        });
+    });
+
+    function isValidPhoneNumber(phoneNumber) {
+        {#    phone number must be 10 digits starting with 01 or 07#}
+        return /^(01|07)\d{8}$/.test(phoneNumber);
+    }
+
+    function isValidNationalId(nationalId) {
+        return /^\d{8,13}$/.test(nationalId);
+    }
+
+    {#  create a function that listens for the selected drop down in the name='role'  and issues a toast explaining what each role is #}
+
+    function roleDescription() {
+        var role = document.querySelector('select[name="role"]').value;
+        var description = '';
+        if (role === 'defendant') {
+            description = 'A defendant in a case is the person who is being accused of a crime or a wrong doing. They are the ones who are being sued.';
+        } else if (role === 'applicant') {
+            description = 'A plaintiff in a case is the person who is suing the opponent. They are the ones who are accusing the opponent of a crime or a wrong doing.';
+        } else {
+            description = 'Please select a role';
+        }
+
+        toast = new Toast(description);
+        toast.show();
+    }
+
+    function caseDescription() {
+        var case_type = document.querySelector('select[name="case_type"]').value;
+        var description = '';
+        if (case_type === 'civil') {
+            description = 'Civil cases are cases that involve disputes between people or organisations. They are typically non-criminal cases. They are typically resolved through monetary compensation or court orders.';
+        } else if (case_type === 'criminal') {
+            description = 'Criminal cases are cases that involve crimes. They are typically resolved through fines, probation, community service, or imprisonment.';
+        } else if (case_type === 'family') {
+            description = 'Family cases are cases that involve family disputes. They are typically resolved through mediation, counselling, or court orders.';
+        } else if (case_type === 'land') {
+            description = 'Land cases are cases that involve disputes over land. They are typically resolved through monetary compensation or court orders.';
+        } else if (case_type === 'commercial') {
+            description = 'Commercial cases are cases that involve disputes between businesses. They are typically resolved through monetary compensation or court orders.';
+        } else if (case_type === 'labour') {
+            description = 'Labour cases are cases that involve disputes between employers and employees. They are typically resolved through monetary compensation or court orders.';
+        } else if (case_type === 'constitutional') {
+            description = 'Constitutional cases are cases that involve disputes over the constitution. They are typically resolved through court orders.';
+        } else if (case_type === 'environmental') {
+            description = 'Environmental cases are cases that involve disputes over the environment. They are typically resolved through court orders.';
+        } else if (case_type === 'appeal') {
+            description = 'Appeal cases are cases that involve disputes over the outcome of a previous case. They are typically resolved through court orders.';
+        } else if (case_type === 'miscellaneous') {
+            description = 'Miscellaneous cases are cases that do not fit into any of the above categories. They are typically resolved through court orders.';
+        } else {
+            description = 'Please select a case type';
+        }
+
+        toast = new Toast(description);
+        toast.show();
+    }
+
+
+</script>
+</body>
+</html>

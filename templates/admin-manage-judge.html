@@ -1,0 +1,103 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} Manage Judges {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+</head>
+
+<article aria-label="main-content">
+
+    {% block search_url %}
+        {% url 'admin-manage-judge' %}
+    {% endblock %}
+
+    {% block title %}
+        Manage Judges
+    {% endblock %}
+
+    {% block content %}
+
+        <article aria-label="clerk-table">
+            <button class="btn btn-primary btn-primary-action" onclick="redirectToCreateClerk()"><i
+                    class="fas fa-plus"></i> Add
+                Judge
+            </button>
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Judge ID</th>
+                        <th>National ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>County</th>
+                        <th>Court</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for judge in judges %}
+                        <tr>
+                            <td>{{ judge.user_id }}</td>
+                            <td>{{ judge.national_id }}</td>
+                            <td>{{ judge.first_name }} {{ judge.last_name }}</td>
+                            <td>{{ judge.phone_number }}</td>
+                            <td>{{ judge.county_of_residence }}</td>
+                            {% if judge.courts.all %}
+                                {% with judge.courts.all as courts %}
+                                    {% if courts|length == 0 %}
+                                        <td>NA</td>
+                                    {% elif courts|length == 1 %}
+                                        <td>{{ courts.0.name }}</td>
+                                    {% else %}
+                                        <td>{{ courts.0.name }} & {{ courts|length|add:"-1" }} Others</td>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <td>NA</td>
+                            {% endif %}
+                            <td>
+                                <a class="btn btn-info btn-secondary-action"
+                                   href="{% url 'admin-edit-judge' user_id=judge.id %}"><i class="fas fa-edit"></i>Edit</a>
+                                <a class="btn btn-danger btn-secondary-action"
+                                   href="{% url 'admin-delete-judge' user_id=judge.id %}"
+                                   onclick="confirmDeleteDialog(event, this.href)"><i
+                                        class="fas fa-trash-alt"></i>Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <script>
+                function redirectToCreateClerk() {
+                    // Redirect to admin-create-clerk view
+                    window.location.href = "admin-create-judge";
+                }
+            </script>
+        </article>
+    {% endblock %}
+</article>
+
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+</html>

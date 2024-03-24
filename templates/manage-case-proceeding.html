@@ -1,0 +1,98 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} Manage Case Proceedings {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+
+</head>
+
+<article aria-label="main-content">
+
+    {% block search_url %}
+        {% url 'manage-case-proceeding' case_id=case.id %}
+    {% endblock %}
+
+    {% block title %}
+        Manage Proceedings
+    {% endblock %}
+
+    {% block content %}
+        <article aria-label="case-table">
+            <a class="btn btn-primary btn-primary-action" href="{% url 'create-case-proceeding' case_id=case.id %}"><i
+                    class="fas fa-plus"></i> Add Case Proceeding
+            </a>
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Document ID</th>
+                        <th>Document Name</th>
+                        <th>Document Type</th>
+                        <th>Filed By</th>
+                        <th>Filed On</th>
+                        <th>Filed As</th>
+                        <th>Confidentiality</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for case_proceeding in case_proceedings %}
+                        <tr class="clickable-row"
+                            onclick="window.location='{% url 'view-case-proceeding' case_proceeding_id=case_proceeding.id %}'">
+                            <td>{{ case_proceeding.document_id | capfirst }}</td>
+                            <td>{{ case_proceeding.document_name | capfirst }}</td>
+                            <td>{{ case_proceeding.document_type | capfirst }}</td>
+                            <td>{{ case_proceeding.filed_by }}</td>
+                            <td>{{ case_proceeding.filed_on }}</td>
+                            <td>{{ case_proceeding.filed_as | capfirst }}</td>
+                            <td>{{ case_proceeding.confidentiality | capfirst }}</td>
+                            <td>
+
+                                {% if user_info.role == 'clerk' %}
+                                    {#  create invoice #}
+                                    <a href="{% url 'select-participant-for-invoice' case_proceeding_id=case_proceeding.id %}"
+                                       class="btn btn-primary btn-secondary-action" onclick="event.stopPropagation()"><i
+                                            class="fas fa-file-invoice"></i> Create Invoice</a>
+                                {% endif %}
+
+                                {% if user_info.role == 'clerk' or user_info.role == 'judge' or case_proceeding.confidentiality == 'low' or case_proceeding.confidentiality == 'medium' and user_info.role == 'participant' or  case_proceeding.confidentiality == 'medium' and user_info.role == 'lawyer' or case_proceeding.filed_by == user_info %}
+                                    <a href="{% url 'edit-case-proceeding'  case_proceeding_id=case_proceeding.id %}"
+                                       class="btn btn-info btn-secondary-action" onclick="event.stopPropagation()"><i
+                                            class="fas fa-edit"></i> Edit</a>
+                                {% endif %}
+                                {% if user_info.role == 'clerk' or user_info.role == 'judge' or case_proceeding.filed_by == user_info %}
+                                    <a href="{% url 'delete-case-proceeding'  case_proceeding_id=case_proceeding.id %}"
+                                       class="btn btn-danger btn-secondary-action"
+                                       onclick="event.stopPropagation(); confirmDeleteDialog(event, this.href)"><i
+                                            class="fas fa-trash"></i> Delete</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    {% endblock %}
+</article>
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+</html>

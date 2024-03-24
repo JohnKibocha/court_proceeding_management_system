@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Courtix">
+    <meta name="keywords" content="Courtix, court, courtix, courtix, courtix">
+    <meta name="author" content="John Kibocha">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Courtix">
+    <meta property="og:description" content="Courtix">
+    <meta property="og:image" content="{% static 'icons/courtix_logo.png' %}">
+    <meta property="og:url" content="http://localhost:8000">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Courtix">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="en_GB">
+    <title>Courtix</title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+</head>
+<body>
+<footer>
+    <div class="footer-container">
+        <div class="logo">
+            <img src="{% static 'icons/courtix_logo.png' %}" alt="Courtix Logo">
+        </div>
+        <div class="social-media">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        <div class="info-container">
+            <div class="hero-info">
+                <h3>About Courtix</h3>
+                <p>Courtix is a web-based system for Kenyan Court Clerks. It records proceedings, generates and tracks
+                    invoices and payments, and analyses data.</p>
+            </div>
+            <div class="services-info">
+                <h3>Our Services</h3>
+                <p>Manage all your cases in one place. Generate invoices for your clients, track payments, and get
+                    insights on your court's performance.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

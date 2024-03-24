@@ -1,0 +1,143 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Courtix">
+    <meta name="keywords" content="Courtix, court, courtix, courtix, courtix">
+    <meta name="author" content="John Kibocha">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Courtix">
+    <meta property="og:description" content="Courtix">
+    <meta property="og:image" content="{% static 'icons/courtix_logo.png' %}">
+    <meta property="og:url" content="http://localhost:8000">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Courtix">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="en_GB">
+    <title>Courtix</title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+    <script src="{% static 'scripts/main.js' %}"></script>
+</head>
+<body>
+<header>
+   {% include 'header.html' %}
+</header>
+<br>
+<main>
+    <article aria-label="hero">
+        <section class="hero">
+            <div class="hero-visual">
+                <img class="hero-image" src="{% static 'images/hero-image.jpg' %}" alt="Courtix Hero Image" width="100%"
+                     height="100%">
+            </div>
+        </section>
+        <br><br>
+        <section class="hero-text">
+            <div class="about-us" id="about-us">
+                <h2>Hey there! Welcome to Courtix</h2>
+                <p>
+                    Courtix is a web-based system for Kenyan Court Clerks. It records proceedings, generates and tracks
+                    invoices and payments, and analyses data. It understands the clerks' daily challenges and workflows.
+                    It Provides asimple and friendly framework that eases their tasks and improves court operations. It
+                    also ensures transparency and efficiency in the Judicial System. It is the only solution you will
+                    need for all your court proceedings needs
+                </p>
+                <div class="container">
+                    <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+                </div>
+            </div>
+        </section>
+    </article>
+    <br><br>
+    <article aria-label="contact-us">
+        <section class="our-services">
+            <h2>Our Services</h2>
+            <div class="services">
+                <div class="service">
+                    <i class="fas fa-gavel"></i>
+                    <h3>Case Management</h3>
+                    <p>Manage all your cases in one place. Track the progress of each case and get notified when a case
+                        is due for hearing</p>
+                </div>
+                <div class="service">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <h3>Invoice Generation and Analytics</h3>
+                    <p>Generate invoices for your clients, track payments, and get insights on your court's performance.
+                        Track the number of cases, revenue, and other metrics</p>
+                </div>
+                <div class="service">
+                    <i class="fas fa-balance-scale"></i>
+                    <h3>Transparency</h3>
+                    <p>Ensure transparency and efficiency in the Judicial System. It is the only solution you will need
+                        for all your court proceedings needs</p>
+                </div>
+            </div>
+        </section>
+        <br><br><br>
+        <section class="contact-us" id="contact-us">
+            <h2>Contact Us</h2>
+            <br>
+            <div class="contact-form">
+                <form id="contact-form" method="post" action="{% url 'contact' %}">
+                    {% csrf_token %}
+                    <div class="form-group names">
+                        <input type="text" id="first-name" name="first_name" placeholder="First Name" required>
+                        <input type="text" id="last-name" name="last_name" placeholder="Last Name">
+                    </div>
+                    <div class="form-group contacts">
+                        <input type="email" id="email" name="email" placeholder="Email" required>
+                        <input type="tel" id="phone" name="phone" placeholder="Phone" maxlength="15">
+                    </div>
+                    <div class="form-group subject">
+                        <input type="text" id="subject" name="subject" placeholder="Subject" required>
+                    </div>
+                    <div class="form-group message">
+                        <textarea id="message" name="message" placeholder="Message" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <div class="container">
+                            <button class="btn btn-primary">submit</button>
+                        </div>
+                        {# show any toast messages available #}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <script>
+                                    const toast = new Toast('{{ message }}');
+                                    toast.show();
+                                </script>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </section>
+    </article>
+</main>
+<br><br>
+<footer>
+    {% include 'footer.html' %}
+</footer>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('contact-form').addEventListener('submit', function (event) {
+            let firstName = document.getElementById('first-name').value;
+            let email = document.getElementById('email').value;
+            let subject = document.getElementById('subject').value;
+            let message = document.getElementById('message').value;
+
+            if (!firstName || !email || !subject || !message) {
+                alert('Please fill in all required fields.');
+                event.preventDefault();
+            }
+        });
+    })
+
+
+</script>
+</body>
+</html>

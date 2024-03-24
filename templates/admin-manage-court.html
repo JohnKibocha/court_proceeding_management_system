@@ -1,0 +1,88 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} Manage Courts {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+</head>
+
+<article aria-label="main-content">
+
+    {% block search_url %}
+        {% url 'admin-manage-court' %}
+    {% endblock %}
+
+    {% block title %}
+        Manage Courts
+    {% endblock %}
+
+    {% block content %}
+
+        <article aria-label="clerk-table">
+            <button class="btn btn-primary btn-primary-action" onclick="redirectToCreateClerk()"><i
+                    class="fas fa-plus"></i> Add
+                Court
+            </button>
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Court ID</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Court Type</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for court in courts %}
+                        <tr>
+                            <td>{{ court.court_id }}</td>
+                            <td>{{ court.name }}</td>
+                            <td>{{ court.location }}</td>
+                            <td>{{ court.court_type }}</td>
+                            <td>{{ court.court_phone }}</td>
+                            <td>
+                                <a class="btn btn-info btn-secondary-action" href="{% url 'admin-edit-court' court_id=court.id %}"><i
+                                        class="fas fa-edit"></i>Edit</a>
+                                <a class="btn btn-danger btn-secondary-action" href="{% url 'admin-delete-court' court_id=court.id %}"
+                                   onclick="confirmDeleteDialog(event, this.href)"><i
+                                        class="fas fa-trash-alt"></i>Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <script>
+                function redirectToCreateClerk() {
+                    // Redirect to admin-create-clerk view
+                    window.location.href = "admin-create-court";
+                }
+            </script>
+        </article>
+    {% endblock %}
+</article>
+
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+</html>

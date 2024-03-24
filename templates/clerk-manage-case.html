@@ -1,0 +1,122 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} Manage Cases {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+
+</head>
+
+<article aria-label="main-content">
+
+    {% block search_url %}
+        {% url 'clerk-manage-case' %}
+    {% endblock %}
+
+    {% block title %}
+        Manage Cases
+    {% endblock %}
+
+    {% block content %}
+        <article aria-label="case-table">
+            <button class="btn btn-primary btn-primary-action" onclick="redirectToCreateCase()"><i
+                    class="fas fa-plus"></i> Add Case
+            </button>
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Case Type</th>
+                        <th>Status</th>
+                        <th>Case</th>
+                        <th>Defendants</th>
+                        <th>Plaintiffs</th>
+                        <th>Judges</th>
+                        <th>Filed On</th>
+                        <th>Hearing Date</th>
+                        <th>Court</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for case in cases %}
+                        <tr class="clickable-row" onclick="window.location='{% url 'manage-case-proceeding' case_id=case.id %}'">
+                            <td><a href="{% url 'dashboard' %}">{{ case.case_id }}</a></td>
+                            <td>{{ case.case_type | capfirst }}</td>
+                            <td>{{ case.case_status | capfirst }}</td>
+                            <td>{{ case.case_name }}</td>
+                            <td>
+                                {% if case.defendants.count == 0 %}
+                                    -
+                                {% elif case.defendants.count == 1 %}
+                                    {{ case.defendants.first.first_name }} {{ case.defendants.first.last_name }}
+                                {% else %}
+                                    {{ case.defendants.first.last_name }} & {{ case.defendants.count|add:"-1" }} others
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if case.plaintiffs.count == 0 %}
+                                    -
+                                {% elif case.plaintiffs.count == 1 %}
+                                    {{ case.plaintiffs.first.first_name }} {{ case.plaintiffs.first.last_name }}
+                                {% else %}
+                                    {{ case.plaintiffs.first.last_name }} & {{ case.plaintiffs.count|add:"-1" }} others
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if case.judges.count == 0 %}
+                                    -
+                                {% elif case.judges.count == 1 %}
+                                    {{ case.judges.first.first_name }} {{ case.judges.first.last_name }}
+                                {% else %}
+                                    {{ case.judges.first.last_name }} & {{ case.judges.count|add:"-1" }} others
+                                {% endif %}
+                            </td>
+                            <td>{{ case.date_filed }}</td>
+                            <td>{{ case.date_hearing }}</td>
+                            <td>{{ case.court.name }}</td>
+                            <td>
+                                <a class="btn btn-info btn-secondary-action"
+                                   href="{% url 'clerk-edit-case' case_id=case.id %}"
+                                   onclick="event.stopPropagation();"><i
+                                        class="fas fa-edit"></i>Edit</a>
+                                <a class="btn btn-danger btn-secondary-action"
+                                   href="{% url 'clerk-delete-case' case_id=case.id %}"
+                                   onclick="confirmDeleteDialog(event, this.href); event.stopPropagation();"><i
+                                        class="fas fa-trash-alt"></i>Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <script>
+                function redirectToCreateCase() {
+                    // Redirect to clerk-create-case view
+                    window.location.href = "clerk-create-case";
+                }
+            </script>
+        </article>
+    {% endblock %}
+</article>
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+</html>

@@ -1,0 +1,475 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block tab_title %} {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="{% static 'scripts/main.js' %}"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #232323; /* Dark background */
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow */
+        }
+
+        .sidebar a {
+            padding: 10px 16px;
+            text-decoration: none;
+            font-size: 22px;
+            color: #ffffff; /* White text */
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #333; /* Darker background on hover */
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 28px;
+            color: #ffffff; /* White close button */
+            transition: 0.3s;
+        }
+
+        .openbtn {
+            font-size: 20px;
+            cursor: pointer;
+            background-color: transparent;
+            color: #000000; /* Black button */
+            padding: 10px 15px;
+            border: none;
+            transition: 0.3s;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .openbtn:hover {
+            background-color: rgba(0, 0, 0, 0.1); /* Light background on hover */
+        }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+            margin: 0 20px 40px 20px; /* trouble */
+
+
+        }
+
+        .main-container {
+            padding: 16px;
+            margin: 20px auto; /* trouble */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile img {
+            border-radius: 50%; /* Rounded profile image */
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .profile h2 {
+            margin: 5px 0;
+            font-size: 24px;
+            color: #ffffff; /* White title */
+        }
+
+        .profile p {
+            margin: 0;
+            font-size: 18px;
+            color: #cccccc; /* Lighter description */
+        }
+
+        @media screen and (max-height: 450px) {
+            .sidebar {
+                padding-top: 15px;
+            }
+
+            .sidebar a {
+                font-size: 18px;
+            }
+        }
+
+        {#Search Bar#}
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 50px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .search-input {
+            border: none;
+            padding: 15px 120px 15px 40px; /* trouble */
+            flex-grow: 1;
+            font-size: 16px;
+            border-radius: 50px;
+            outline: none;
+        }
+
+        .search-icon-button {
+            background: none;
+            border: none;
+            color: #333;
+            padding-left: 20px;
+            padding-right: 30px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .search-wrapper {
+                width: 100%;
+            }
+
+            .search-input {
+                padding-left: 20px;
+                padding-right: 10px;
+            }
+
+            .search-icon-button {
+                padding-left: 5px;
+                padding-right: 20px;
+            }
+        }
+
+        {#  tables  #}
+
+        .table-container {
+            margin: 20px;
+            border-radius: 04px;
+            overflow: auto;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+        }
+
+        .material-table {
+            width: 100%;
+            border-collapse: collapse;
+
+        }
+
+        .material-table th,
+        .material-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #cccccc;
+            background: white;
+            font-family: "Roboto", "Script MT Bold", sans-serif;
+            font-weight: normal;
+            font-size: medium;
+        }
+
+        .material-table th {
+            background-color: #5A5A5A;
+            color: white;
+            font-weight: bold;
+            font-size: large;
+        }
+
+
+        tr {
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+        }
+
+        tr:hover {
+            transform: translateY(-5px);
+            border: 1px solid #ccc;
+            transition: all 0.2s ease-in-out;
+        }
+
+        tr:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .material-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .invoice-table tr:active{
+            transform: none !important;
+        }
+
+        .invoice-table tr:hover {
+            transform: none !important;
+            border: 1px solid #ccc;
+            transition: none !important;
+        }
+
+        @media screen and (max-width: 600px) {
+            .material-table thead {
+                display: none;
+            }
+
+            .material-table tr {
+                margin-bottom: 10px;
+                display: block;
+                border-bottom: 2px solid #ddd;
+            }
+
+            .material-table td {
+                display: block;
+                text-align: center;
+                font-size: 18px;
+                font-weight: normal;
+                border-bottom: 1px dotted #ccc;
+            }
+
+            .material-table td::before {
+                content: attr(data-label);
+                float: left;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+        }
+
+        {#  buttons  #}
+        .btn-primary-action {
+            margin-left: 20px;
+        }
+
+        .btn-secondary-action {
+            padding: 5px 10px 5px 10px; /*trouble*/
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        {#  invoice  #}
+        .document-view-container {
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+            font-size: medium;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .court-name {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .invoice-title {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .court-info,
+        .invoice-info,
+        .participant-info {
+            margin-bottom: 20px;
+        }
+
+        .material-table .table-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .document-disclaimer {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: small;
+        }
+
+        .document-footer {
+            text-align: center;
+            font-size: x-small;
+        }
+        .empty-row {
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    {% block sidebar %}
+        <div class="profile">
+
+            {% if user_info.profile_image %}
+                <img src="{{ user_info.profile_image.url }}" alt="{{ user.first_name }} {{ user.last_name }}">
+            {% else %}
+                <img src="{% static 'images/default.png' %}" alt="{{ user.first_name }} {{ user.last_name }}">
+            {% endif %}
+
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p>{{ user.role | capfirst }}</p>
+        </div>
+        {% block sidebar_items %}
+            {% if user_info.role == 'admin' %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'admin-manage-clerk' %}"><i class="fas fa-user-tie"></i> Manage Clerks</a>
+                <a href="{% url 'admin-manage-court' %}"><i class="fas fa-building"></i> Manage Courts</a>
+                <a href="{% url 'admin-manage-judge' %}"><i class="fas fa-gavel"></i> Manage Judges</a>
+                <a href="{% url 'admin-manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                    Profile</a>
+                <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            {% elif user_info.role == 'clerk' %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'clerk-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
+                <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> Manage Invoices</a>
+                <a href="{% url 'clerk-manage-participant' %}"><i class="fas fa-users"></i> Manage Users</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Manage Payments</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            {% elif user_info.role == 'lawyer' %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
+                <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> View Invoices</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Make Payments</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            {% elif user_info.role == 'observer' %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
+                <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> View Invoices</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Make Payments</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            {% elif user_info.role == 'participant' %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
+                <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> View Invoices</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Make Payments</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            {% elif user_info.role == 'judge' %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
+                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            {% endif %}
+        {% endblock %}
+    {% endblock %}
+</div>
+
+<div id="main">
+    <button class="openbtn" onclick="openNav()">&#9776;</button>
+    <div class="main-container">
+
+        {% block search_container %}
+            <article aria-label="search">
+                <div class="search-container">
+                    <form action="{% block search_url %}{% url 'dashboard' %}{% endblock %}" method="get"
+                          id="search-form">
+                        <div class="search-wrapper">
+                            <input id="search-bar" type="search" name="q" placeholder="Search..." class="search-input">
+                            <button type="submit" class="search-icon-button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+        {% endblock %}
+
+
+        <h1 class="title">{% block title %} Title {% endblock %}</h1>
+
+
+        {% block content %}
+            <p>Content goes here...</p>
+        {% endblock %}
+
+    </div>
+</div>
+
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<script>
+    document.querySelector('.search-icon-button').addEventListener('click', function () {
+        document.getElementById('search-form').submit();
+    });
+
+    function openNav() {
+        document.getElementById("mySidebar").style.width = "250px";
+        document.getElementById("main").style.marginLeft = "250px";
+        document.getElementsByClassName("openbtn")[0].style.visibility = "hidden";
+    }
+
+    function closeNav() {
+        document.getElementById("mySidebar").style.width = "0";
+        document.getElementById("main").style.marginLeft = "0";
+        document.getElementsByClassName("openbtn")[0].style.visibility = "visible";
+    }
+</script>
+
+</body>
+</html>
+

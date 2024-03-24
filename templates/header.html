@@ -1,0 +1,44 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+ <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Courtix">
+    <meta name="keywords" content="Courtix, court, courtix, courtix, courtix">
+    <meta name="author" content="John Kibocha">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Courtix">
+    <meta property="og:description" content="Courtix">
+    <meta property="og:image" content="{% static 'icons/courtix_logo.png' %}">
+    <meta property="og:url" content="http://localhost:8000">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Courtix">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="en_GB">
+    <title></title>
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+</head>
+<body>
+<header>
+    <nav class="navbar">
+        <div class="navbar-logo"><a href="/"><img src="{% static 'icons/courtix_logo.png' %}" alt="Courtix Logo" width="70px"
+                                                  height="70px"></a></div>
+        <ul class="nav-links">
+            <input type="checkbox" id="checkbox-toggle"/>
+            <label for="checkbox-toggle" class="hamburger">&#9776;</label>
+            <div class="menu">
+                <li><a href="#about-us">About Us</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="{% url 'login' %}" class="btn-secondary btn-plain" id="btn-auth">Login</a></li>
+                <li><a href="{% url 'register' %}" class="btn-primary btn-plain" id="btn-auth">Register</a></li>
+            </div>
+        </ul>
+    </nav>
+</header>
+<br><br><br>
+</body>
+</html>

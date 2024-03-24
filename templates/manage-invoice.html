@@ -1,0 +1,89 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} Manage Invoices {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+
+</head>
+
+<article aria-label="main-content">
+
+    {% block search_url %}
+        {% url 'manage-invoice' %}
+    {% endblock %}
+
+    {% block title %}
+        Manage Invoices
+    {% endblock %}
+
+    {% block content %}
+        <article aria-label="case-table">
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Invoice ID</th>
+                        <th>Invoice Type</th>
+                        <th>Reciepients</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Due Date</th>
+                        <th>Case Proceeding</th>
+                        <th>Created By</th>
+                        <th>Created On</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for invoice in invoices %}
+                        <tr class="clickable-row" onclick="window.location='{% url 'view-invoice' invoice_id=invoice.id %}'">
+                            <td>{{ invoice.invoice_id }}</td>
+                            <td>{{ invoice.invoice_type | capfirst}}</td>
+                            {% if invoice.participant %}
+                                <td>{{invoice.participant}}</td>
+                            {% else %}
+                                <td> - </td>
+                            {% endif %}
+                            <td>{{ invoice.invoice_status | capfirst}}</td>
+                            <td>{{ invoice.invoice_amount }}</td>
+                            <td>{{ invoice.invoice_date }}</td>
+                            <td>{{ invoice.invoice_due_date }}</td>
+                            <td>{{ invoice.case_proceeding | capfirst}}</td>
+                            <td>{{ invoice.created_by | capfirst}}</td>
+                            <td>{{ invoice.created_on }}</td>
+                            <td>
+                                {% if user_info.role == 'clerk' %}
+                                    <a href="{% url 'edit-invoice' invoice_id=invoice.id %}" class="btn btn-info btn-secondary-action" onclick="event.stopPropagation()" ><i class="fas fa-edit"></i> Edit</a>
+                                    <a href="{% url 'delete-invoice' invoice_id=invoice.id %}" class="btn btn-danger btn-secondary-action"
+                                       onclick="event.stopPropagation(); confirmDeleteDialog(event, this.href)"> <i class="fas fa-trash"></i> Delete</a>
+                                {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    {% endblock %}
+</article>
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+</html>

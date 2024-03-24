@@ -1,0 +1,48 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} View {{ case_proceeding.document_name | capfirst }} {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+
+    
+
+</head>
+
+<article aria-label="main-content">
+
+    {% block search_container %}
+        
+    {% endblock %}
+
+    {% block title %}
+        
+    {% endblock %}
+
+    {% block content %}
+        <button class="btn btn-success" onclick="window.location.href = '{% url 'download-case-proceeding-document' case_proceeding_id=case_proceeding.id  %}'"><i class="fa fa-print"></i> Download</button>
+        <div class="document-view-container">
+            <p>{{ case_proceeding.content | safe }}</p>
+        </div>
+    {% endblock %}
+</article>
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+</html>

@@ -1,0 +1,114 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %}
+        Manage Participants
+    {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+
+</head>
+
+<article aria-label="main-content">
+
+
+    {% block search_url %}
+        {% url 'clerk-manage-participant' %}
+    {% endblock %}
+
+    {% block title %}
+        Manage Participants
+    {% endblock %}
+
+    {% block content %}
+        <article aria-label="participant-table">
+            <button class="btn btn-primary btn-primary-action" onclick="redirectToCreateparticipant()"><i
+                    class="fas fa-plus"></i> Add
+                Participant
+            </button>
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Participant ID</th>
+                        <th>National ID</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>County</th>
+                        <th>Court</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for participant in participants %}
+                        <tr>
+                            <td>{{ participant.user_id }}</td>
+                            <td>{{ participant.national_id }}</td>
+                            <td>{{ participant.first_name }} {{ participant.last_name }}</td>
+                            <td>{{ participant.role | capfirst }}</td>
+                            <td>{{ participant.phone_number }}</td>
+                            <td>{{ participant.county_of_residence }}</td>
+                            {% if participant.courts.all %}
+                                {% with participant.courts.all as courts %}
+                                    {% if courts|length == 0 %}
+                                        <td>NA</td>
+                                    {% elif courts|length == 1 %}
+                                        <td>{{ courts.0.name }}</td>
+                                    {% else %}
+                                        <td>{{ courts.0.name }} & {{ courts|length|add:"-1" }} Others</td>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <td>NA</td>
+                            {% endif %}
+                            <td>
+                                {% if not participant.is_approved %}
+                                    <a class="btn btn-info btn-secondary-action"
+                                       href="{% url 'clerk-approve-participant' user_id=participant.id %}"><i
+                                            class="fas fa-check-circle"
+                                            onclick="confirmDialog(event, this.href, 'Are you sure you want to approve this user?')"></i>
+                                        Approve</a>
+                                {% endif %}
+                                <a class="btn btn-danger btn-secondary-action"
+                                   href="{% url 'clerk-delete-participant' user_id=participant.id %}"
+                                   onclick="confirmDeleteDialog(event, this.href)"><i
+                                        class="fas fa-trash-alt"></i> Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <script>
+                function redirectToCreateparticipant() {
+                    // Redirect to clerk-create-participant view
+                    window.location.href = "clerk-create-participant";
+                }
+            </script>
+        </article>
+    {% endblock %}
+</article>
+
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+</html>
