@@ -60,3 +60,7 @@ class InvoiceInterface(ABC):
     def get_invoice_by_amount(self, amount):
         pass
 
+    @abstractmethod
+    def get_invoice_by_case_proceeding(self, case_proceeding):
+        pass
+

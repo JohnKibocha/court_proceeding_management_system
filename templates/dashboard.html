@@ -5,7 +5,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
- <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
     {% block tab_title %}
         Dashboard
     {% endblock %}
@@ -26,7 +26,7 @@
             color: #fff;
             border-radius: 10px;
             margin: 10px;
-            padding: 20px;
+            padding: 30px; /* increased padding */
             flex: 1 0 21%; /* this will make the cards responsive */
             box-sizing: border-box;
             cursor: pointer;
@@ -38,8 +38,14 @@
         }
 
         .card-title {
-            font-size: 1.2em;
+            font-size: 1.5em; /* increased font size */
             margin-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: 2em; /* icon size */
+            text-align: center; /* center the icon */
+            margin-bottom: 15px; /* space between the icon and the title */
         }
 
         .card-text {
@@ -61,42 +67,106 @@
     {% endblock %}
 
     {% block content %}
-        {% if user_info.role == 'admin' %}
-            <div class="card-container">
-                <div class="card" onclick="location.href='{% url 'admin-manage-clerk' %}'">
-                    <h5 class="card-title">Clerks</h5>
-                    <p class="card-text">Total No. of Clerks: {{ clerks.count }}</p>
-                </div>
-                <div class="card" onclick="location.href='{% url 'admin-manage-judge' %}'">
-                    <h5 class="card-title">Judges</h5>
-                    <p class="card-text">Total No. of Judges: {{ judges.count }}</p>
-                </div>
-                <div class="card" onclick="location.href='{% url 'admin-manage-court' %}'">
-                    <h5 class="card-title">Courts</h5>
-                    <p class="card-text">Total No. of Courts: {{ courts.count }}</p>
-                </div>
+    {% if user_info.role == 'admin' %}
+        <div class="card-container">
+            <div class="card" onclick="location.href='{% url 'admin-manage-clerk' %}'">
+                <i class="card-icon fas fa-user-tie"></i>
+                <h5 class="card-title">Manage Clerks</h5>
+                <p class="card-text">Total Clerks: {{ clerks.count }}</p>
             </div>
-        {% elif user_info.role == 'clerk' %}
-            {% comment %}
-            <div class="card-container">
-                <div class="card" onclick="location.href='{% url 'clerk-manage-case' %}'">
-                    <h5 class="card-title text-center">Cases</h5>
-                    <p class="card-text text-center">Total cases: {{ cases.count }}</p>
-                </div>
-                <div class="card" onclick="location.href='{% url 'clerk-manage-participant' %}'">
-                    <h5 class="card-title text-center">Litigants</h5>
-                    <p class="card-text text-center">Total Litigants: {{ participants.count }}</p>
-                </div>
-                <div class="card" onclick="location.href='{% url 'clerk-manage-invoice' %}'">
-                    <h5 class="card-title text-center">Invoices</h5>
-                    <p class="card-text text-center">Total invoices: {{ invoices.count }}</p>
-                </div>
-            <div class="card" onclick="location.href='{% url 'clerk-manage-payment' %}'">
-                <h5 class="card-title text-center">Payments</h5>
-                <p class="card-text text-center">Total payments: {{ payments.count }}</p>
+            <div class="card" onclick="location.href='{% url 'admin-manage-judge' %}'">
+                <i class="card-icon fas fa-user-tie"></i>
+                <h5 class="card-title">Manage Judges</h5>
+                <p class="card-text">Total Judges: {{ judges.count }}</p>
             </div>
-            {% endcomment %}
-        {% endif %}
+            <div class="card" onclick="location.href='{% url 'admin-manage-court' %}'">
+                <i class="card-icon fas fa-building"></i>
+                <h5 class="card-title">Manage Courts</h5>
+                <p class="card-text">Total Courts: {{ courts.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'manage-profile' user_id=request.user.id %}'">
+                <i class="card-icon fas fa-user"></i>
+                <h5 class="card-title">Manage Profile</h5>
+                <p class="card-text">Click to change your profile details</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'clerk-manage-participant' %}'">
+                <i class="card-icon fas fa-users"></i>
+                <h5 class="card-title">Manage Participants</h5>
+                <p class="card-text">Total Participants: {{ participants.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'manage-payment' %}'">
+                <i class="card-icon fas fa-dollar-sign"></i>
+                <h5 class="card-title">Manage Transactions</h5>
+                <p class="card-text">Total Transactions: {{ transactions.count }}</p>
+            </div>
+        </div>
+    {% elif user_info.role == 'clerk' %}
+        <div class="card-container">
+            <div class="card" onclick="location.href='{% url 'manage-invoice' %}'">
+                <i class="card-icon fas fa-file-invoice"></i>
+                <h5 class="card-title">Manage Invoices</h5>
+                <p class="card-text">Total Invoices: {{ invoices.count }}</p>
+            </div>
+            <div class="card">
+                <i class="card-icon fas fa-check-circle"></i>
+                <h5 class="card-title">View Case Documents</h5>
+                <p class="card-text">Total Documents: {{ case_documents.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'manage-profile' user_id=request.user.id %}'">
+                <i class="card-icon fas fa-user"></i>
+                <h5 class="card-title">Manage Profile</h5>
+                <p class="card-text">Click to change your profile details</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'clerk-manage-case' %}'">
+                <i class="card-icon fas fa-gavel"></i>
+                <h5 class="card-title">Manage Cases</h5>
+                <p class="card-text">Total Cases: {{ cases.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'clerk-manage-participant' %}'">
+                <i class="card-icon fas fa-users"></i>
+                <h5 class="card-title">Manage Participants</h5>
+                <p class="card-text">Total Participants: {{ participants.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'manage-payment' %}'">
+                <i class="card-icon fas fa-dollar-sign"></i>
+                <h5 class="card-title">Manage Transactions</h5>
+                <p class="card-text">Total Transactions: {{ transactions.count }}</p>
+            </div>
+        </div>
+    {% elif user_info.role == 'judge' or user_info.role == 'lawyer' or user_info.role == 'participant' %}
+        <div class="card-container">
+            <div class="card" onclick="location.href='{% url 'manage-invoice' %}'">
+                <i class="card-icon fas fa-file-invoice"></i>
+                <h5 class="card-title">Manage Invoices</h5>
+                <p class="card-text">Total Invoices: {{ invoices.count }}</p>
+            </div>
+            <div class="card">
+                <i class="card-icon fas fa-check-circle"></i>
+                <h5 class="card-title">View Case Documents</h5>
+                <p class="card-text">Total Documents: {{ case_documents.count }}</p>
+            </div>
+            <div class="card">
+                <i class="card-icon fas fa-building"></i>
+                <h5 class="card-title">View Courts</h5>
+                <p class="card-text">Total Courts: {{ courts.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'clerk-manage-case' %}'">
+                <i class="card-icon fas fa-gavel"></i>
+                <h5 class="card-title">Manage Cases</h5>
+                <p class="card-text">Total Cases: {{ cases.count }}</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'manage-profile' user_id=request.user.id %}'">
+                <i class="card-icon fas fa-user"></i>
+                <h5 class="card-title">Manage Profile</h5>
+                <p class="card-text">Click to change your profile details</p>
+            </div>
+            <div class="card" onclick="location.href='{% url 'manage-payment' %}'">
+                <i class="card-icon fas fa-dollar-sign"></i>
+                <h5 class="card-title">View Transactions</h5>
+                <p class="card-text">Total Transactions: {{ transactions.count }}</p>
+            </div>
+        </div>
+    {% endif %}
     {% endblock %}
 </article>
 

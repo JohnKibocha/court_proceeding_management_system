@@ -1,4 +1,4 @@
-import os
+from datetime import datetime
 from io import BytesIO
 
 from django.contrib import messages
@@ -13,6 +13,7 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import html
 from django.views import View
+from django_daraja.mpesa.core import MpesaClient
 from xhtml2pdf import pisa
 
 from court_proceedings_management_application.forms import CaseProceedingForm
@@ -23,6 +24,7 @@ from court_proceedings_management_application.interfaces.clerk_service import Cl
 from court_proceedings_management_application.interfaces.contact_service import ContactService
 from court_proceedings_management_application.interfaces.court_service import CourtService
 from court_proceedings_management_application.interfaces.invoice_service import InvoiceService
+from court_proceedings_management_application.interfaces.payment_service import PaymentService
 from court_proceedings_management_application.interfaces.registration_service import RegistrationService
 from court_proceedings_management_application.interfaces.user_service import UserDoesNotExist
 from court_proceedings_management_application.interfaces.user_service import UserService
@@ -217,12 +219,18 @@ class UserLogoutView(LogoutView):
         return HttpResponseRedirect(reverse('login'))
 
 
+# views.py
 class DashboardView(View):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_service = UserService()
         self.court_service = CourtService()
+        self.case_service = CaseService()
+        self.user_service = UserService()
+        self.payment_service = PaymentService()
+        self.invoice_service = InvoiceService()
+        self.case_proceeding_service = CaseProceedingService()
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -234,13 +242,23 @@ class DashboardView(View):
         clerks = self.user_service.get_user_by_role('clerk')
         judges = self.user_service.get_user_by_role('judge')
         courts = self.court_service.get_all_courts()
+        cases = self.case_service.get_all_cases()
+        participants = self.user_service.get_all_users()
+        transactions = self.payment_service.get_all_payments()
+        invoices = self.invoice_service.get_all_invoices()
+        case_documents = self.case_proceeding_service.get_all_case_proceedings()
 
         context = {
             'user': user,
             'user_info': user_info,
             'clerks': clerks,
             'judges': judges,
-            'courts': courts
+            'courts': courts,
+            'cases': cases,
+            'participants': participants,
+            'transactions': transactions,
+            'invoices': invoices,
+            'case_documents': case_documents
         }
 
         return render(request, 'dashboard.html', context)
@@ -851,7 +869,7 @@ class AdminDeleteJudgeView(View):
         return redirect('admin-manage-judge')
 
 
-class AdminManageProfileView(View):
+class ManageProfileView(View):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -861,28 +879,30 @@ class AdminManageProfileView(View):
     def get(self, request, user_id):
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
+        roles = self.user_service.get_role_by_user(user)
         counties = self.user_service.get_counties()
         tribes = self.user_service.get_tribes()
         court_objects = self.court_service.get_all_courts()
         try:
-            admin = self.user_service.get_user_by_id(user_id)
+            user = self.user_service.get_user_by_id(user_id)
         except UserDoesNotExist:
             messages.error(request, 'Account not found', extra_tags='toast')
             return redirect('dashboard')
 
         context = {
             'user_info': user_info,
-            'admin': admin,
+            'user': user,
+            'roles': roles,
             'counties': counties,
             'tribes': tribes,
             'court_objects': court_objects
         }
 
-        return render(request, 'admin-manage-profile.html', context)
+        return render(request, 'manage-profile.html', context)
 
     def post(self, request, user_id):
         if request.method == 'POST':
-            admin = self.user_service.get_user_by_id(user_id)
+            user = self.user_service.get_user_by_id(user_id)
 
             # Concatenate the address fields and set the new values and if not exist retain old ones
             postal_code = request.POST.get('postal_code', '')
@@ -891,34 +911,34 @@ class AdminManageProfileView(View):
             floor_number = request.POST.get('floor_number', '')
             street_name = request.POST.get('street_name', '')
 
-            if admin is not None:
-                admin.first_name = request.POST.get('first_name', admin.first_name)
-                admin.last_name = request.POST.get('last_name', admin.last_name)
-                admin.username = request.POST.get('username', admin.username)
-                admin.email = request.POST.get('email', admin.email)
-                admin.national_id = request.POST.get('national_id', admin.national_id)
-                admin.county_of_residence = request.POST.get('county_of_residence', admin.county_of_residence)
-                admin.phone_number = request.POST.get('phone_number', admin.phone_number)
-                admin.gender = request.POST.get('gender', admin.gender)
-                admin.tribe = request.POST.get('tribe', admin.tribe)
-                admin.date_of_birth = request.POST.get('date_of_birth', admin.date_of_birth)
+            if user is not None:
+                user.first_name = request.POST.get('first_name', user.first_name)
+                user.last_name = request.POST.get('last_name', user.last_name)
+                user.username = request.POST.get('username', user.username)
+                user.email = request.POST.get('email', user.email)
+                user.national_id = request.POST.get('national_id', user.national_id)
+                user.county_of_residence = request.POST.get('county_of_residence', user.county_of_residence)
+                user.phone_number = request.POST.get('phone_number', user.phone_number)
+                user.gender = request.POST.get('gender', user.gender)
+                user.tribe = request.POST.get('tribe', user.tribe)
+                user.date_of_birth = request.POST.get('date_of_birth', user.date_of_birth)
                 # use the old address if new one not provided
                 if postal_code != '' and town_city != '' and building_name != '' and floor_number != '' and street_name != '':
-                    admin.address = f'{postal_code}, {building_name}, {floor_number} Floor, {street_name}, {town_city}, Kenya'
+                    user.address = f'{postal_code}, {building_name}, {floor_number} Floor, {street_name}, {town_city}, Kenya'
                 else:
-                    admin.address = admin.address
+                    user.address = user.address
 
-                admin.password = make_password(request.POST.get('password', None))
-                if 'profile_image' in request.FILES:
-                    profile_image = request.FILES['profile_image']
+                user.password = make_password(request.POST.get('password', None))
+                profile_image = request.FILES['profile_image'] if 'profile_image' in request.FILES else None
+                if profile_image is not None:
                     # Add your validation logic here
                     fs = FileSystemStorage()
                     filename = fs.save(profile_image.name, profile_image)
-                    uploaded_file_url = fs.url(filename)
-                    admin.profile_image = uploaded_file_url
-                elif not admin.profile_image:
-                    admin.profile_image = None
-                admin.save()
+                    uploaded_file_url = filename
+                    user.profile_image = uploaded_file_url
+                elif not user.profile_image:
+                    user.profile_image = None
+                user.save()
                 messages.success(request, 'Your account has been updated successfully', extra_tags='toast')
                 return redirect('dashboard')
             else:
@@ -1084,6 +1104,8 @@ class ClerkManageCaseView(View):
         super().__init__(*args, **kwargs)
         self.user_service = UserService()
         self.case_service = CaseService()
+        self.invoice_service = InvoiceService()
+        self.case_proceeding_service = CaseProceedingService()
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -1093,9 +1115,25 @@ class ClerkManageCaseView(View):
         user_info = self.user_service.get_user_info(user.username)
         cases = self.case_service.get_all_cases()
 
+        for case in cases:
+            case_proceedings = self.case_proceeding_service.get_case_proceeding_by_case(case)
+            for case_proceeding in case_proceedings:
+                if self.invoice_service.get_invoice_by_case_proceeding(
+                        case_proceeding) is not None or case_proceeding.document is not None or case_proceeding.document.document_type in [
+                    'judgement', 'opinion', 'verdict', 'sentence', 'decree', 'mandate, injuction', 'transcript']:
+                    case.case_status = 'concluded'
+                    case.save()
+                elif self.invoice_service.get_invoice_by_case_proceeding(
+                        case_proceeding) is None and case_proceeding.document is not None:
+                    case.case_status = 'ongoing'
+                    case.save()
+                else:
+                    case.case_status = 'pending'
+                    case.save()
+
         context = {
             'user_info': user_info,
-            'cases': cases
+            'cases': cases,
         }
 
         return render(request, 'clerk-manage-case.html', context)
@@ -1547,6 +1585,7 @@ class ManageInvoiceView(View):
         super().__init__(*args, **kwargs)
         self.invoice_service = InvoiceService()
         self.user_service = UserService()
+        self.payment_service = PaymentService()
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -1556,9 +1595,32 @@ class ManageInvoiceView(View):
         user_info = self.user_service.get_user_info(user.username)
         invoices = self.invoice_service.get_all_invoices()
 
+        payments = self.payment_service.get_all_payments()
+        for payment in payments:
+            if payment.invoice is not None:
+                invoice = self.invoice_service.get_invoice_by_id(payment.invoice.id)
+                invoice.invoice_status = 'paid'
+                invoice.save()
+            elif payment.payment_status == 'cancelled':
+                payment.invoice.invoice_status = 'cancelled'
+                payment.invoice.save()
+
+        # check if the invoice is overdue and the status does not qualify for paid
+        for invoice in invoices:
+            if invoice.invoice_due_date < datetime.now().date() and invoice.invoice_status != 'paid':
+                invoice.invoice_status = 'overdue'
+                invoice.save()
+            elif invoice.invoice_due_date > datetime.now().date() and invoice.invoice_status != 'paid':
+                invoice.invoice_status = 'pending'
+                invoice.save()
+            else:
+                invoice.invoice_status = 'paid'
+                invoice.save()
+
         context = {
             'user_info': user_info,
-            'invoices': invoices
+            'invoices': invoices,
+            'payments': payments
         }
 
         return render(request, 'manage-invoice.html', context)
@@ -1813,3 +1875,123 @@ class DownloadInvoiceView(View):
         # Close the buffer and return the response
         buffer.close()
         return response
+
+
+# Payment Views
+class ManagePaymentView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect('login')
+
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        payments = self.payment_service.get_all_payments()
+
+        context = {
+            'user_info': user_info,
+            'payments': payments
+        }
+
+        return render(request, 'manage-payment.html', context)
+
+
+class CreatePaymentView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+        self.invoice_service = InvoiceService()
+
+    def get(self, request, invoice_id):
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        invoice_no = self.invoice_service.get_invoice_by_id(invoice_id).invoice_id
+        invoice_amount = self.invoice_service.get_invoice_by_id(invoice_id).invoice_amount
+        defendant_name = user_info.first_name.upper() + ' ' + user_info.last_name.upper()
+        defendant_phone = user_info.phone_number
+        invoice_date = self.invoice_service.get_invoice_by_id(invoice_id).invoice_date
+        invoice_reference = f'{invoice_no}'
+        description = f'Payment of {invoice_no} for the judgement against {defendant_name} on {invoice_date}.'
+        invoice = self.invoice_service.get_invoice_by_id(invoice_id)
+        context = {
+            'user_info': user_info,
+            'invoice_amount': invoice_amount,
+            'invoice_no': invoice_no,
+            'defendant_name': defendant_name,
+            'defendant_phone': defendant_phone,
+            'invoice_date': invoice_date,
+            'invoice_reference': invoice_reference,
+            'description': description,
+            'invoice': invoice
+        }
+        return render(request, 'create-payment.html', context)
+
+    def post(self, request, invoice_id):
+        cl = MpesaClient()
+
+        # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
+        phone_number = '0113171495'
+        amount = 1
+        account_reference = 'reference'
+        transaction_desc = 'Description'
+        callback_url = 'https://api.darajambili.com/express-payment'
+        response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
+        return HttpResponse(response)
+
+def stk_push_callback(request):
+    data = request.body
+    return HttpResponse(data)
+
+class ViewPaymentReceiptView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+
+    def get(self, request, payment_id):
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        payment = self.payment_service.get_payment_by_id(payment_id)
+        context = {
+            'user_info': user_info,
+            'payment': payment
+        }
+        return render(request, 'view-payment-receipt.html', context)
+
+
+class DownloadPaymentReceiptView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+
+    def get(self, request, payment_id):
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        payment = self.payment_service.get_payment_by_id(payment_id)
+        context = {
+            'user_info': user_info,
+            'payment': payment
+        }
+        return render(request, 'download-payment-receipt.html', context)
+
+    def post(self, request, payment_id):
+        payment = self.payment_service.get_payment_by_id(payment_id)
+        # Create a file-like buffer to receive PDF data.
+        buffer = BytesIO()
+
+        # Create the PDF object, using the buffer as its "file."
+        pisa_status = pisa.CreatePDF(payment.content, dest=buffer)
+
+        # if error then show some funy view
+        if pisa_status.err:
+            return HttpResponse('We had some errors <pre>' + html + '</pre>')
+        buffer.seek(0)
+
+        return FileResponse(buffer, as_attachment=True,
+                            filename=f'Payment Receipt for Invoice #{payment.invoice.invoice_id}.pdf')

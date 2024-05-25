@@ -33,7 +33,7 @@ urlpatterns = [
     path('admin-create-judge', views.AdminCreateJudgeView.as_view(), name='admin-create-judge'),
     path('admin-edit-judge/<int:user_id>', views.AdminEditJudgeView.as_view(), name='admin-edit-judge'),
     path('admin-delete-judge/<int:user_id>', views.AdminDeleteJudgeView.as_view(), name='admin-delete-judge'),
-    path('admin-manage-profile/<int:user_id>', views.AdminManageProfileView.as_view(), name='admin-manage-profile'),
+    path('manage-profile/<int:user_id>', views.ManageProfileView.as_view(), name='manage-profile'),
 
     # clerk paths
     # clerk manage participants
@@ -68,6 +68,14 @@ urlpatterns = [
     path('delete-invoice/<int:invoice_id>', views.DeleteInvoiceView.as_view(), name='delete-invoice'),
     path('view-invoice/<int:invoice_id>', views.ViewInvoiceView.as_view(), name='view-invoice'),
     path('download-invoice/<int:invoice_id>', views.DownloadInvoiceView.as_view(), name='download-invoice'),
+
+
+    # manage payments
+    path('daraja/stk_push', views.stk_push_callback, name='stk_push_callback'),
+    path('manage-payment', views.ManagePaymentView.as_view(), name='manage-payment'),
+    path('create-payment/<int:invoice_id>', views.CreatePaymentView.as_view(), name='create-payment'),
+    path('view-payment-receipt/<int:payment_id>', views.ViewPaymentReceiptView.as_view(), name='view-payment-receipt'),
+    path('download-payment-receipt/<int:payment_id>', views.DownloadPaymentReceiptView.as_view(), name='download-payment-receipt'),
 
 
     # header and footer paths

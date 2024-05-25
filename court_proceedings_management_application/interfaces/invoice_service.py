@@ -45,3 +45,6 @@ class InvoiceService(InvoiceInterface):
 
     def get_invoice_by_amount(self, amount):
         return self.invoice_database.get_invoice_by_amount(amount)
+
+    def get_invoice_by_case_proceeding(self, case_proceeding):
+        return self.invoice_database.get_invoice_by_case_proceeding(case_proceeding)

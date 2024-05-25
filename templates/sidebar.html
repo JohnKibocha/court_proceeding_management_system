@@ -355,52 +355,52 @@
                 <a href="{% url 'admin-manage-clerk' %}"><i class="fas fa-user-tie"></i> Manage Clerks</a>
                 <a href="{% url 'admin-manage-court' %}"><i class="fas fa-building"></i> Manage Courts</a>
                 <a href="{% url 'admin-manage-judge' %}"><i class="fas fa-gavel"></i> Manage Judges</a>
-                <a href="{% url 'admin-manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                <a href="{% url 'manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
                     Profile</a>
                 <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
                         class="fas fa-sign-out-alt"></i> Logout</a>
             {% elif user_info.role == 'clerk' %}
                 <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="{% url 'clerk-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
                 <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> Manage Invoices</a>
                 <a href="{% url 'clerk-manage-participant' %}"><i class="fas fa-users"></i> Manage Users</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Manage Payments</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'manage-payment' %}"><i class="fas fa-money-check-alt"></i> Manage Payments</a>
+                <a href="{% url 'manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                    Profile</a>
                 <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
                         class="fas fa-sign-out-alt"></i> Logout</a>
             {% elif user_info.role == 'lawyer' %}
                 <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
                 <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> View Invoices</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Make Payments</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'manage-payment' %}"><i class="fas fa-money-check-alt"></i> Manage Payments</a>
+                <a href="{% url 'manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                    Profile</a>
                 <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
                         class="fas fa-sign-out-alt"></i> Logout</a>
             {% elif user_info.role == 'observer' %}
                 <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
                 <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> View Invoices</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Make Payments</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'manage-payment' %}"><i class="fas fa-money-check-alt"></i> Manage Payments</a>
+                <a href="{% url 'manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                    Profile</a>
                 <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
                         class="fas fa-sign-out-alt"></i> Logout</a>
             {% elif user_info.role == 'participant' %}
                 <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
                 <a href="{% url 'manage-invoice' %}"><i class="fas fa-file-invoice"></i> View Invoices</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-money-check-alt"></i> Make Payments</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'manage-payment' %}"><i class="fas fa-money-check-alt"></i> Manage Payments</a>
+                <a href="{% url 'manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                    Profile</a>
                 <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
                         class="fas fa-sign-out-alt"></i> Logout</a>
             {% elif user_info.role == 'judge' %}
                 <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a href="{% url 'participant-manage-case' %}"><i class="fas fa-briefcase"></i> Manage Cases</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-search"></i> Track Cases</a>
-                <a href="{% url 'dashboard' %}"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="{% url 'manage-profile' user_id=request.user.id %}"><i class="fas fa-user-circle"></i>
+                    Profile</a>
                 <a href="{% url 'logout' %}" onclick="confirmLogoutDialog(event, this.href)"><i
                         class="fas fa-sign-out-alt"></i> Logout</a>
             {% endif %}
@@ -411,23 +411,6 @@
 <div id="main">
     <button class="openbtn" onclick="openNav()">&#9776;</button>
     <div class="main-container">
-
-        {% block search_container %}
-            <article aria-label="search">
-                <div class="search-container">
-                    <form action="{% block search_url %}{% url 'dashboard' %}{% endblock %}" method="get"
-                          id="search-form">
-                        <div class="search-wrapper">
-                            <input id="search-bar" type="search" name="q" placeholder="Search..." class="search-input">
-                            <button type="submit" class="search-icon-button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </article>
-        {% endblock %}
-
 
         <h1 class="title">{% block title %} Title {% endblock %}</h1>
 

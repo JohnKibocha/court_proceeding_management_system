@@ -14,6 +14,7 @@ from pathlib import Path
 
 from django.contrib import messages
 from django.template.context_processors import static
+from environ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,13 +22,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
+# Env variables
+env = environ.Env(DEBUG=(bool, False))
+# reading .env file
+environ.Env.read_env()
+
+"""
+# MPESA API settings
+MPESA_CONSUMER_KEY = env('MPESA_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET = env('MPESA_CONSUMER_SECRET')
+MPESA_SHORTCODE = env('MPESA_SHORTCODE')
+MPESA_EXPRESS_SHORTCODE = env('MPESA_EXPRESS_SHORTCODE')
+MPESA_SHORTCODE_TYPE = 'paybill'
+MPESA_PASSKEY = env('MPESA_PASSKEY')
+MPESA_INITIATOR_USERNAME = env('MPESA_INITIATOR_USERNAME')
+MPESA_INITIATOR_SECURITY_CREDENTIAL = env('MPESA_INITIATOR_SECURITY_CREDENTIAL')
+"""
+
+# MPESA API settings
+MPESA_CONSUMER_KEY = 'olakfmvmcdyjrN83UIVoLRy2Au80vbrZtOyVwNOCXfSysHmd'
+MPESA_CONSUMER_SECRET = 'pWA43z9iEdTnZMcG3u7xgWKivBsMAcr3telWhALCPfhBSGTC5eysb4YhDwQpCqKF'
+MPESA_SHORTCODE = '174379'
+MPESA_EXPRESS_SHORTCODE = '174379'
+MPESA_SHORTCODE_TYPE = 'paybill'
+MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
+MPESA_INITIATOR_USERNAME = 'testapi'
+MPESA_INITIATOR_SECURITY_CREDENTIAL = 'Safaricom999!*!'
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5ldr3)05fn^-ss24cm5^gb4=y#%^bt1@+0@1=tes)o1urm0#@0'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'courtix.pythonanywhere.com']
 
 # Application definition
 
@@ -43,6 +71,8 @@ INSTALLED_APPS = [
     'ckeditor',
     'reportlab',
     'xhtml2pdf',
+    'error_code',
+    'django_daraja',
 ]
 
 MIDDLEWARE = [

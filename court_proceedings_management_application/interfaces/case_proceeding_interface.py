@@ -26,6 +26,10 @@ class CaseProceedingInterface(ABC):
 
     # case proceeding retrieval methods
     @abstractmethod
+    def get_all_case_proceedings(self):
+        pass
+
+    @abstractmethod
     def get_case_proceedings(self, case_id):
         pass
 

@@ -1,0 +1,84 @@
+{% extends 'sidebar.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/x-icon">
+    {% block tab_title %} Manage Payments {% endblock %}
+    <link rel="stylesheet" href="{% static 'styles/main.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script src="{% static 'scripts/main.js' %}"></script>
+
+</head>
+
+<article aria-label="main-content">
+
+    {% block title %}
+        Manage Payments
+    {% endblock %}
+
+    {% block content %}
+        <article aria-label="case-table">
+            <div class="table-container">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Phone </th>
+                        <th>Reference</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Created On</th>
+                        <th>Paid For</th>
+                        <th>Paid By</th>
+                        <th>Invoice</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for payment in payments %}
+                        <tr class="clickable-row"
+                            onclick="window.location='{% url 'view-payment-receipt' payment_id=payment.id %}'">
+                            <td>{{ payment.transaction_no }}</td>
+                            <td>{{ payment.phone_number }}</td>
+                            <td>{{ payment.reference }}</td>
+                            <td>{{ payment.description | truncatechars_html:20 }}</td>
+                            <td>{{ payment.amount }}/= </td>
+                            <td>{{ payment.payment_status | capfirst }}</td>
+                            <td>{{ payment.created_on }}</td>
+                            <td>{{ payment.paid_for }}</td>
+                            <td>{{ payment.paid_by }}</td>
+                            <td>{{ payment.invoice }}</td>
+                            
+                            <td>
+                                <a class="btn btn-warning btn-secondary-action"
+                                   href="{% url 'view-payment-receipt' payment_id=payment.id %}"
+                                   onclick="event.stopPropagation();"><i
+                                        class="fas fa-eye"></i> View</a>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    {% endblock %}
+</article>
+
+<div class="container">
+    {# show any toast messages available #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                const toast = new Toast('{{ message }}');
+                toast.show();
+            </script>
+        {% endfor %}
+    {% endif %}
+</div>
+
+
+</html>

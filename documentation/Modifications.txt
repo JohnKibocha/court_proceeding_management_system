@@ -1,0 +1,28 @@
+updated TOC page 4-10:
+
+CHAPTER ONE
+page 2 and 3:
+readjusted 1.3 objectives
+renamed justification to 1.4, 1.5 scope
+
+CHAPTER THREE
+page 13:
+removed spacing below 3.2.3
+page 14:
+removed spacing below 3.3.3
+page 16:
+removed spacing below 3.3.6
+page 22:
+filled the space with the image in page 23
+removed blank page below 22
+
+CHAPTER FIVE
+page 24-33
+removed space below the title of chapter 5
+removed unrequired space
+rename the chapter and subchapters
+
+CHAPTER 6:
+page 36:
+moved the 
+

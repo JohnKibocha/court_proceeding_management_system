@@ -34,6 +34,10 @@ class UserInterface:
     def get_user_by_role(self, role):
         pass
 
+    @abstractmethod
+    def get_role_by_user(self, user):
+        pass
+
     # User modification methods
     @abstractmethod
     def delete_user(self, user):
