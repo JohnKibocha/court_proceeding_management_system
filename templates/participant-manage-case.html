@@ -16,10 +16,6 @@
 
 <article aria-label="main-content">
 
-    {% block search_url %}
-        {% url 'clerk-manage-case' %}
-    {% endblock %}
-
     {% block title %}
         Manage Cases
     {% endblock %}
@@ -41,8 +37,8 @@
                         <th>Plaintiffs</th>
                         <th>Judges</th>
                         <th>Filed On</th>
-                        <th>Hearing Date</th>
                         <th>Court</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -80,8 +76,11 @@
                                 {% endif %}
                             </td>
                             <td>{{ case.date_filed }}</td>
-                            <td>{{ case.date_hearing }}</td>
                             <td>{{ case.court.name }}</td>
+                        <td>
+                            {# view a case send to 'manage-case-proceeding' case_id=case.id %}' #}
+                            <a href="{% url 'manage-case-proceeding' case_id=case.id %}" class="btn btn-primary btn-action"><i class="fas fa-eye"></i> View</a>
+                        </td>
                         </tr>
                     {% endfor %}
                     </tbody>

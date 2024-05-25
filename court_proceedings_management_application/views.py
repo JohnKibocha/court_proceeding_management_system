@@ -1,7 +1,10 @@
-import os
+import json
+import logging
+from datetime import datetime
 from io import BytesIO
 
 from django.contrib import messages
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LogoutView
@@ -13,6 +16,10 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import html
 from django.views import View
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from xhtml2pdf import pisa
 
 from court_proceedings_management_application.forms import CaseProceedingForm
@@ -23,6 +30,9 @@ from court_proceedings_management_application.interfaces.clerk_service import Cl
 from court_proceedings_management_application.interfaces.contact_service import ContactService
 from court_proceedings_management_application.interfaces.court_service import CourtService
 from court_proceedings_management_application.interfaces.invoice_service import InvoiceService
+from court_proceedings_management_application.interfaces.mpesa.mpesa_checkout_serializer import MpesaCheckoutSerializer
+from court_proceedings_management_application.interfaces.mpesa.mpesa_gateway import MpesaGateWay
+from court_proceedings_management_application.interfaces.payment_service import PaymentService
 from court_proceedings_management_application.interfaces.registration_service import RegistrationService
 from court_proceedings_management_application.interfaces.user_service import UserDoesNotExist
 from court_proceedings_management_application.interfaces.user_service import UserService
@@ -217,12 +227,18 @@ class UserLogoutView(LogoutView):
         return HttpResponseRedirect(reverse('login'))
 
 
+# views.py
 class DashboardView(View):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_service = UserService()
         self.court_service = CourtService()
+        self.case_service = CaseService()
+        self.user_service = UserService()
+        self.payment_service = PaymentService()
+        self.invoice_service = InvoiceService()
+        self.case_proceeding_service = CaseProceedingService()
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -234,13 +250,23 @@ class DashboardView(View):
         clerks = self.user_service.get_user_by_role('clerk')
         judges = self.user_service.get_user_by_role('judge')
         courts = self.court_service.get_all_courts()
+        cases = self.case_service.get_all_cases()
+        participants = self.user_service.get_all_users()
+        transactions = self.payment_service.get_all_payments()
+        invoices = self.invoice_service.get_all_invoices()
+        case_documents = self.case_proceeding_service.get_all_case_proceedings()
 
         context = {
             'user': user,
             'user_info': user_info,
             'clerks': clerks,
             'judges': judges,
-            'courts': courts
+            'courts': courts,
+            'cases': cases,
+            'participants': participants,
+            'transactions': transactions,
+            'invoices': invoices,
+            'case_documents': case_documents
         }
 
         return render(request, 'dashboard.html', context)
@@ -851,7 +877,7 @@ class AdminDeleteJudgeView(View):
         return redirect('admin-manage-judge')
 
 
-class AdminManageProfileView(View):
+class ManageProfileView(View):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -861,28 +887,30 @@ class AdminManageProfileView(View):
     def get(self, request, user_id):
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
+        roles = self.user_service.get_role_by_user(user)
         counties = self.user_service.get_counties()
         tribes = self.user_service.get_tribes()
         court_objects = self.court_service.get_all_courts()
         try:
-            admin = self.user_service.get_user_by_id(user_id)
+            user = self.user_service.get_user_by_id(user_id)
         except UserDoesNotExist:
             messages.error(request, 'Account not found', extra_tags='toast')
             return redirect('dashboard')
 
         context = {
             'user_info': user_info,
-            'admin': admin,
+            'user': user,
+            'roles': roles,
             'counties': counties,
             'tribes': tribes,
             'court_objects': court_objects
         }
 
-        return render(request, 'admin-manage-profile.html', context)
+        return render(request, 'manage-profile.html', context)
 
     def post(self, request, user_id):
         if request.method == 'POST':
-            admin = self.user_service.get_user_by_id(user_id)
+            user = self.user_service.get_user_by_id(user_id)
 
             # Concatenate the address fields and set the new values and if not exist retain old ones
             postal_code = request.POST.get('postal_code', '')
@@ -891,34 +919,34 @@ class AdminManageProfileView(View):
             floor_number = request.POST.get('floor_number', '')
             street_name = request.POST.get('street_name', '')
 
-            if admin is not None:
-                admin.first_name = request.POST.get('first_name', admin.first_name)
-                admin.last_name = request.POST.get('last_name', admin.last_name)
-                admin.username = request.POST.get('username', admin.username)
-                admin.email = request.POST.get('email', admin.email)
-                admin.national_id = request.POST.get('national_id', admin.national_id)
-                admin.county_of_residence = request.POST.get('county_of_residence', admin.county_of_residence)
-                admin.phone_number = request.POST.get('phone_number', admin.phone_number)
-                admin.gender = request.POST.get('gender', admin.gender)
-                admin.tribe = request.POST.get('tribe', admin.tribe)
-                admin.date_of_birth = request.POST.get('date_of_birth', admin.date_of_birth)
+            if user is not None:
+                user.first_name = request.POST.get('first_name', user.first_name)
+                user.last_name = request.POST.get('last_name', user.last_name)
+                user.username = request.POST.get('username', user.username)
+                user.email = request.POST.get('email', user.email)
+                user.national_id = request.POST.get('national_id', user.national_id)
+                user.county_of_residence = request.POST.get('county_of_residence', user.county_of_residence)
+                user.phone_number = request.POST.get('phone_number', user.phone_number)
+                user.gender = request.POST.get('gender', user.gender)
+                user.tribe = request.POST.get('tribe', user.tribe)
+                user.date_of_birth = request.POST.get('date_of_birth', user.date_of_birth)
                 # use the old address if new one not provided
                 if postal_code != '' and town_city != '' and building_name != '' and floor_number != '' and street_name != '':
-                    admin.address = f'{postal_code}, {building_name}, {floor_number} Floor, {street_name}, {town_city}, Kenya'
+                    user.address = f'{postal_code}, {building_name}, {floor_number} Floor, {street_name}, {town_city}, Kenya'
                 else:
-                    admin.address = admin.address
+                    user.address = user.address
 
-                admin.password = make_password(request.POST.get('password', None))
-                if 'profile_image' in request.FILES:
-                    profile_image = request.FILES['profile_image']
+                user.password = make_password(request.POST.get('password', None))
+                profile_image = request.FILES['profile_image'] if 'profile_image' in request.FILES else None
+                if profile_image is not None:
                     # Add your validation logic here
                     fs = FileSystemStorage()
                     filename = fs.save(profile_image.name, profile_image)
-                    uploaded_file_url = fs.url(filename)
-                    admin.profile_image = uploaded_file_url
-                elif not admin.profile_image:
-                    admin.profile_image = None
-                admin.save()
+                    uploaded_file_url = filename
+                    user.profile_image = uploaded_file_url
+                elif not user.profile_image:
+                    user.profile_image = None
+                user.save()
                 messages.success(request, 'Your account has been updated successfully', extra_tags='toast')
                 return redirect('dashboard')
             else:
@@ -1084,6 +1112,8 @@ class ClerkManageCaseView(View):
         super().__init__(*args, **kwargs)
         self.user_service = UserService()
         self.case_service = CaseService()
+        self.invoice_service = InvoiceService()
+        self.case_proceeding_service = CaseProceedingService()
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -1093,9 +1123,25 @@ class ClerkManageCaseView(View):
         user_info = self.user_service.get_user_info(user.username)
         cases = self.case_service.get_all_cases()
 
+        for case in cases:
+            case_proceedings = self.case_proceeding_service.get_case_proceeding_by_case(case)
+            for case_proceeding in case_proceedings:
+                if self.invoice_service.get_invoice_by_case_proceeding(
+                        case_proceeding) is not None or case_proceeding.document is not None or case_proceeding.document.document_type in [
+                    'judgement', 'opinion', 'verdict', 'sentence', 'decree', 'mandate, injuction', 'transcript']:
+                    case.case_status = 'concluded'
+                    case.save()
+                elif self.invoice_service.get_invoice_by_case_proceeding(
+                        case_proceeding) is None and case_proceeding.document is not None:
+                    case.case_status = 'ongoing'
+                    case.save()
+                else:
+                    case.case_status = 'pending'
+                    case.save()
+
         context = {
             'user_info': user_info,
-            'cases': cases
+            'cases': cases,
         }
 
         return render(request, 'clerk-manage-case.html', context)
@@ -1547,6 +1593,7 @@ class ManageInvoiceView(View):
         super().__init__(*args, **kwargs)
         self.invoice_service = InvoiceService()
         self.user_service = UserService()
+        self.payment_service = PaymentService()
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -1556,9 +1603,32 @@ class ManageInvoiceView(View):
         user_info = self.user_service.get_user_info(user.username)
         invoices = self.invoice_service.get_all_invoices()
 
+        payments = self.payment_service.get_all_payments()
+        for payment in payments:
+            if payment.invoice is not None:
+                invoice = self.invoice_service.get_invoice_by_id(payment.invoice.id)
+                invoice.invoice_status = 'paid'
+                invoice.save()
+            elif payment.payment_status == 'cancelled':
+                payment.invoice.invoice_status = 'cancelled'
+                payment.invoice.save()
+
+        # check if the invoice is overdue and the status does not qualify for paid
+        for invoice in invoices:
+            if invoice.invoice_due_date < datetime.now().date() and invoice.invoice_status != 'paid':
+                invoice.invoice_status = 'overdue'
+                invoice.save()
+            elif invoice.invoice_due_date > datetime.now().date() and invoice.invoice_status != 'paid':
+                invoice.invoice_status = 'pending'
+                invoice.save()
+            else:
+                invoice.invoice_status = 'paid'
+                invoice.save()
+
         context = {
             'user_info': user_info,
-            'invoices': invoices
+            'invoices': invoices,
+            'payments': payments
         }
 
         return render(request, 'manage-invoice.html', context)
@@ -1813,3 +1883,179 @@ class DownloadInvoiceView(View):
         # Close the buffer and return the response
         buffer.close()
         return response
+
+
+# Mpesa API Views
+
+gateway = MpesaGateWay()
+
+
+@authentication_classes([])
+@permission_classes((AllowAny,))
+class MpesaCheckout(APIView):
+    serializer = MpesaCheckoutSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer(data=request.POST)
+        if serializer.is_valid(raise_exception=True):
+            payload = {"data": serializer.validated_data, "request": request}
+            res = gateway.stk_push_request(payload)
+            return Response(res, status=200)
+
+
+@authentication_classes([])
+@permission_classes((AllowAny,))
+class MpesaCallBack(APIView):
+    def get(self, request):
+        return Response({"status": "OK"}, status=200)
+
+    def post(self, request, *args, **kwargs):
+        logging.info("{}".format("Callback from MPESA"))
+        data = request.body
+        return gateway.callback(json.loads(data))
+
+
+# Payment Views
+class ManagePaymentView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect('login')
+
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        payments = self.payment_service.get_all_payments()
+
+        context = {
+            'user_info': user_info,
+            'payments': payments
+        }
+
+        return render(request, 'manage-payment.html', context)
+
+
+class CreatePaymentView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+        self.invoice_service = InvoiceService()
+        self.mpesa_checkout = MpesaCheckout()
+
+    def post(self, request, invoice_id):
+        phone_number = request.POST.get('phone_number')
+        amount = request.POST.get('amount')
+        reference = request.POST.get('reference')
+        description = request.POST.get('description')
+
+        # Prepare the payload for the Mpesa API
+        payload = {
+            "phone_number": phone_number,
+            "amount": amount,
+            "reference": reference,
+            "description": description,
+        }
+
+        # Send the payment request to the Mpesa API
+        res = self.mpesa_checkout.post(request, data=payload)
+
+        def get_client_ip(request):
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            return ip
+
+        # Check if the request was successful
+        if res.status_code == 200:
+            try:
+                # Parse the response JSON
+                res_json = res.json()
+
+                # Check if the response code is '0' indicating success
+                if res_json.get('ResponseCode') == '0':
+                    # Payment successful, create a payment object and save it to the database
+                    payment_data = {
+                        "transaction_no": res_json.get('CheckoutRequestID'),
+                        "phone_number": phone_number,
+                        "checkout_request_id": res_json.get('CheckoutRequestID'),
+                        "reference": reference,
+                        "description": description,
+                        "amount": amount,
+                        "status": 0,  # Pending
+                        "payment_status": 'pending',
+                        "receipt_no": None,
+                        "created_on": datetime.now(),
+                        "ip_address": get_client_ip(request),
+                        "paid_for": request.user.upper(),
+                        "paid_by": res_json.get('CustomerName', 'Defendant').upper(),
+                        "invoice": self.invoice_service.get_invoice_by_id(invoice_id),
+                    }
+                    self.payment_service.create_payment(**payment_data)
+                    messages.success(request, 'Payment processed successfully', extra_tags='toast')
+                else:
+                    # Payment failed, handle accordingly
+                    messages.error(request, 'Payment failed: {}'.format(res_json.get('errorMessage', 'Unknown error')), extra_tags='toast')
+            except ValueError:
+                # Error parsing JSON response
+                messages.error(request, 'Error parsing Mpesa response', extra_tags='toast')
+        else:
+            # Request failed
+            messages.error(request, 'Error processing payment: {}'.format(res.text), extra_tags='toast')
+
+        return redirect('manage-payment')
+
+
+class ViewPaymentReceiptView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+
+    def get(self, request, payment_id):
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        payment = self.payment_service.get_payment_by_id(payment_id)
+        context = {
+            'user_info': user_info,
+            'payment': payment
+        }
+        return render(request, 'view-payment-receipt.html', context)
+
+
+class DownloadPaymentReceiptView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_service = PaymentService()
+        self.user_service = UserService()
+
+    def get(self, request, payment_id):
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        payment = self.payment_service.get_payment_by_id(payment_id)
+        context = {
+            'user_info': user_info,
+            'payment': payment
+        }
+        return render(request, 'download-payment-receipt.html', context)
+
+    def post(self, request, payment_id):
+        payment = self.payment_service.get_payment_by_id(payment_id)
+        # Create a file-like buffer to receive PDF data.
+        buffer = BytesIO()
+
+        # Create the PDF object, using the buffer as its "file."
+        pisa_status = pisa.CreatePDF(payment.content, dest=buffer)
+
+        # if error then show some funy view
+        if pisa_status.err:
+            return HttpResponse('We had some errors <pre>' + html + '</pre>')
+        buffer.seek(0)
+
+        return FileResponse(buffer, as_attachment=True,
+                            filename=f'Payment Receipt for Invoice #{payment.invoice.invoice_id}.pdf')

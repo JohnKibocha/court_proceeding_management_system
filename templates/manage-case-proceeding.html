@@ -16,10 +16,6 @@
 
 <article aria-label="main-content">
 
-    {% block search_url %}
-        {% url 'manage-case-proceeding' case_id=case.id %}
-    {% endblock %}
-
     {% block title %}
         Manage Proceedings
     {% endblock %}
@@ -55,7 +51,11 @@
                             <td>{{ case_proceeding.filed_as | capfirst }}</td>
                             <td>{{ case_proceeding.confidentiality | capfirst }}</td>
                             <td>
-
+                                <a class="btn btn-warning btn-secondary-action"
+                                   href="{% url 'view-case-proceeding' case_proceeding_id=case_proceeding.id %}"
+                                   onclick="event.stopPropagation();"><i
+                                        class="fas fa-eye"></i> View</a>    
+                            
                                 {% if user_info.role == 'clerk' %}
                                     {#  create invoice #}
                                     <a href="{% url 'select-participant-for-invoice' case_proceeding_id=case_proceeding.id %}"

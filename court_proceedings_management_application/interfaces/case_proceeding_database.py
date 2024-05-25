@@ -40,6 +40,9 @@ class CaseProceedingDatabase(CaseProceedingInterface):
         return case_proceeding
 
     # case proceeding retrieval methods
+    def get_all_case_proceedings(self):
+        return CaseProceeding.objects.all()
+
     def get_case_proceedings(self, case_id):
         return CaseProceeding.objects.filter(case_id=case_id)
 

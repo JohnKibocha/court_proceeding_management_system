@@ -41,6 +41,9 @@ class UserService(UserInterface):
             print(e)
             return None
 
+    def get_role_by_user(self, user):
+        return self.user_database.get_role_by_user(user)
+
     def get_user_by_role(self, role):
         try:
             return self.user_database.get_user_by_role(role)

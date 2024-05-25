@@ -23,6 +23,9 @@ class CaseProceedingService(CaseProceedingInterface):
         return self.case_proceeding_database.grant_case_proceeding_edit_permission(case_proceeding, user)
 
     # case proceeding retrieval methods
+    def get_all_case_proceedings(self):
+        return self.case_proceeding_database.get_all_case_proceedings()
+
     def get_case_proceedings(self, case_id):
         return self.case_proceeding_database.get_case_proceedings(case_id)
 

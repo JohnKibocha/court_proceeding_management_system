@@ -45,6 +45,9 @@ class UserDatabase(UserInterface):
         except User.DoesNotExist:
             return UserDoesNotExist(f'User with id {user_id} does not exist')
 
+    def get_role_by_user(self, user):
+        return user.role
+
     def get_user_by_role(self, role):
         try:
             return User.objects.filter(role=role)

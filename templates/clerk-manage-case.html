@@ -16,10 +16,6 @@
 
 <article aria-label="main-content">
 
-    {% block search_url %}
-        {% url 'clerk-manage-case' %}
-    {% endblock %}
-
     {% block title %}
         Manage Cases
     {% endblock %}
@@ -84,14 +80,18 @@
                             <td>{{ case.date_hearing }}</td>
                             <td>{{ case.court.name }}</td>
                             <td>
+                                <a class="btn btn-warning btn-secondary-action"
+                                   href="{% url 'manage-case-proceeding' case_id=case.id %}"
+                                   onclick="event.stopPropagation();"><i
+                                        class="fas fa-eye"></i> View Documents</a>
                                 <a class="btn btn-info btn-secondary-action"
                                    href="{% url 'clerk-edit-case' case_id=case.id %}"
                                    onclick="event.stopPropagation();"><i
-                                        class="fas fa-edit"></i>Edit</a>
+                                        class="fas fa-edit"></i> Edit</a>
                                 <a class="btn btn-danger btn-secondary-action"
                                    href="{% url 'clerk-delete-case' case_id=case.id %}"
                                    onclick="confirmDeleteDialog(event, this.href); event.stopPropagation();"><i
-                                        class="fas fa-trash-alt"></i>Delete</a>
+                                        class="fas fa-trash-alt"></i> Delete</a>
                             </td>
                         </tr>
                     {% endfor %}

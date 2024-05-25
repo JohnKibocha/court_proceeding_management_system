@@ -14,6 +14,7 @@ from pathlib import Path
 
 from django.contrib import messages
 from django.template.context_processors import static
+from environ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +28,7 @@ SECRET_KEY = 'django-insecure-5ldr3)05fn^-ss24cm5^gb4=y#%^bt1@+0@1=tes)o1urm0#@0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'courtix.pythonanywhere.com']
 
 # Application definition
 
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'reportlab',
     'xhtml2pdf',
+    'error_code',
 ]
 
 MIDDLEWARE = [
@@ -171,3 +173,8 @@ CKEDITOR_CONFIGS = {
         'autoGrow_maxHeight': 150,
     },
 }
+
+# Env variables
+env = environ.Env(DEBUG=(bool, False))
+# reading .env file
+environ.Env.read_env()

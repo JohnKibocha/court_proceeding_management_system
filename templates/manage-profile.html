@@ -31,43 +31,47 @@
 <main>
     <section class="form-container">
         <header>Update your Profile</header>
-        <form action="{% url 'admin-manage-profile' user_id=admin.id %}" method="post" class="form" enctype="multipart/form-data">
+        <form action="{% url 'manage-profile' user_id=request.user.id %}" method="post" class="form" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="container image-container">
-                <img id="output" class="image-view" width="200" src="{{ admin.profile_image.url }}" style="border-radius: 50%"/>
+                {% if user.profile_image %}
+                    <img id="output" class="image-view" width="200" src="{{ user.profile_image.url }}" style="border-radius: 50%"/>
+                {% else %}
+                    <img id="output" class="image-view" width="200" src="{% static 'images/default.png' %}" style="border-radius: 50%"/>
+                {% endif %}
             </div>
             <input type="file" id="profile_image" name="profile_image" accept="image/*" onchange="loadFile(event)" class="form-field form-font">
 
             <div class="input-box">
                 <label>First Name</label>
-                <input type="text" name="first_name" placeholder="Enter first name" required class="form-field form-font" value="{{ admin.first_name }}"/>
+                <input type="text" name="first_name" placeholder="Enter first name" required class="form-field form-font" value="{{ user.first_name }}"/>
             </div>
 
             <div class="input-box">
                 <label>Last Name</label>
-                <input type="text" name="last_name" placeholder="Enter last name" required class="form-field form-font" value="{{ admin.last_name }}"/>
+                <input type="text" name="last_name" placeholder="Enter last name" required class="form-field form-font" value="{{ user.last_name }}"/>
             </div>
 
             <div class="input-box">
                 <label>UserName</label>
-                <input type="text" name="username" placeholder="Enter username" required class="form-field form-font" value="{{ admin.username }}"/>
+                <input type="text" name="username" placeholder="Enter username" required class="form-field form-font" value="{{ user.username }}"/>
             </div>
 
             <div class="input-box">
                 <label>Email Address</label>
-                <input type="email" name="email" placeholder="Enter email address" required class="form-field form-font" value="{{ admin.email }}"/>
+                <input type="email" name="email" placeholder="Enter email address" required class="form-field form-font" value="{{ user.email }}"/>
             </div>
 
             <div class="input-box">
                 <label>National ID</label>
-                <input type="number" name="national_id" placeholder="Enter ID Number" required class="form-field form-number form-font" value="{{ admin.national_id }}"/>
+                <input type="number" name="national_id" placeholder="Enter ID Number" required class="form-field form-number form-font" value="{{ user.national_id }}"/>
             </div>
 
             <div class="input-box">
                 <label>Role</label>
                 <select name="role" class="form-field form-dropdown form-font">
-                    <option value="admin" onclick="roleDescription()">Admin</option>
+                    <option value="{{ user.role }}">{{ user.role |capfirst }}</option>
                 </select>
             </div>
 
@@ -92,11 +96,11 @@
             <div class="column">
                 <div class="input-box">
                     <label>Phone Number</label>
-                    <input type="number" name="phone_number" placeholder="Enter phone number" required class="form-field form-number form-font" value="{{ admin.phone_number }}"/>
+                    <input type="number" name="phone_number" placeholder="Enter phone number" required class="form-field form-number form-font" value="{{ user.phone_number }}"/>
                 </div>
                 <div class="input-box">
                     <label>Birth Date</label>
-                    <input type="date" name="date_of_birth" placeholder="Enter birth date" required class="form-field form-date form-font" value="{{ admin.date_of_birth }}"/>
+                    <input type="date" name="date_of_birth" placeholder="Enter birth date" required class="form-field form-date form-font" value="{{ user.date_of_birth }}"/>
                 </div>
             </div>
 
@@ -218,7 +222,7 @@
     function roleDescription() {
         var role = document.querySelector('select[name="role"]').value;
         var description = '';
-        if (role === 'admin') {
+        if (role === 'judge') {
             description = 'A Judge is a person who presides over court proceedings, either alone or as a part of a panel of admins. The powers, functions, method of appointment, discipline, and training of admins vary widely across different jurisdictions.';
         }
 

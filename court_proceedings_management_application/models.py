@@ -1,6 +1,10 @@
+import uuid
+
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
+import re
 
 
 # Create your models here.
@@ -169,7 +173,7 @@ class User(AbstractUser, PermissionsMixin):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name} (ID: {self.national_id})'
+        return f'{self.first_name} {self.last_name}'
 
 
 class Court(models.Model):
@@ -210,7 +214,7 @@ class Court(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.name} ({self.court_type} - {self.location})'
+        return f'{self.name} ({self.location})'
 
 
 class Case(models.Model):
@@ -294,7 +298,7 @@ class Case(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.case_name} ({self.case_type} - {self.case_status})'
+        return f'{self.case_name} ({self.case_type} case)'
 
 
 class Relief(models.Model):
@@ -441,7 +445,6 @@ class Invoice(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
     relieved_by = models.ForeignKey(Relief, on_delete=models.CASCADE, null=True, blank=True)
 
-
     def save(self, *args, **kwargs):
         if not self.invoice_id:
             last_invoice = Invoice.objects.all().order_by('invoice_id').last()
@@ -451,6 +454,106 @@ class Invoice(models.Model):
                 self.invoice_id = 'INV-%04d' % (last_invoice.id + 1)
         return super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f' {self.invoice_id} (KES {self.invoice_amount})'
+
+
+# function to generate unique transaction numbers for each transaction
+
+def next_letter_sequence(seq):
+    if seq == 'ZZZZ':
+        return 'AAAA'
+    last_char = seq[-1]
+    if last_char != 'Z':
+        return seq[:-1] + chr(ord(last_char) + 1)
+    else:
+        return next_letter_sequence(seq[:-1]) + 'A'
+
+
+def next_digit_sequence(seq):
+    if seq == '999999':
+        return '654321'
+    return str(int(seq) + 1).zfill(6)
+
+
+def next_two_letter_sequence(seq):
+    if seq == 'ZZ':
+        return 'DG'
+    last_char = seq[-1]
+    if last_char != 'Z':
+        return seq[:-1] + chr(ord(last_char) + 1)
+    else:
+        return seq[0] + 'A'
+
+
+# Transaction model for payment processing
+class Transaction(models.Model):
+    STATUS_CHOICES = (
+        (0, 'Pending'),
+        (1, 'Complete'),
+        (2, 'Failed'),
+        (3, 'Cancelled'),
+        (4, 'Refunded'),
+    )
+
+    PAYMENT_STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('complete', 'Complete'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
+    )
+
+    transaction_no = models.CharField(max_length=50, unique=True)
+    phone_number = PhoneNumberField(null=False, blank=False)
+    checkout_request_id = models.CharField(max_length=200)
+    reference = models.CharField(max_length=40, blank=True)
+    description = models.TextField(null=True, blank=True)
+    amount = models.CharField(max_length=10)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=1)
+    payment_status = models.CharField(max_length=15, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    receipt_no = models.CharField(max_length=200, blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    ip_address = models.CharField(max_length=200, blank=True, null=True)
+    paid_for = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoice_recepient', default='')
+    paid_by = models.CharField(max_length=200, blank=True, null=True)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='invoice', default='')
 
     def __str__(self):
-        return f'Invoice for {self.invoice_type} - {self.invoice_status} - {self.invoice_amount}'
+        return f'Transaction {self.transaction_no} - {self.amount}'
+
+    def save(self, *args, **kwargs):
+        if not self.transaction_no:
+            last_transaction = Transaction.objects.all().order_by('-id').first()
+            if last_transaction is None:
+                self.transaction_no = 'ABCD654321DG'
+            else:
+                parts = re.match(r'([A-Z]{4})(\d{6})([A-Z]{2})', last_transaction.transaction_no)
+                letter_seq = next_letter_sequence(parts.group(1))
+                digit_seq = next_digit_sequence(parts.group(2))
+                two_letter_seq = next_two_letter_sequence(parts.group(3))
+                if two_letter_seq == 'DG':
+                    if digit_seq == '654321':
+                        letter_seq = next_letter_sequence(letter_seq)
+                    else:
+                        digit_seq = next_digit_sequence(digit_seq)
+                self.transaction_no = letter_seq + digit_seq + two_letter_seq
+
+        if self.status == 1:
+            self.invoice.invoice_status = 'paid'
+            self.invoice.save()
+            self.payment_status = 'complete'
+        elif self.status == 2:
+            self.invoice.invoice_status = 'pending'
+            self.invoice.save()
+            self.payment_status = 'failed'
+        elif self.status == 3:
+            self.invoice.invoice_status = 'pending'
+            self.invoice.save()
+            self.payment_status = 'cancelled'
+        elif self.status == 4:
+            self.invoice.invoice_status = 'pending'
+            self.invoice.save()
+            self.payment_status = 'refunded'
+
+        super().save(*args, **kwargs)

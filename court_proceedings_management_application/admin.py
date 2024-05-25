@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from court_proceedings_management_application.models import User, Contact, Court, Case, CaseProceeding, Relief, Invoice
+from court_proceedings_management_application.models import User, Contact, Court, Case, CaseProceeding, Relief, Invoice, \
+    Transaction
 
 
 # Register your models here.
@@ -47,7 +48,6 @@ admin.site.register(Court, CourtAdmin)
 
 
 class CaseAdmin(admin.ModelAdmin):
-    # values: case_id, case_name, case_type, case_status, case_description, date_filed, date_hearing, court, created_by, created_on
     list_display = ['case_id', 'case_name', 'case_type', 'case_status', 'date_filed', 'date_hearing', 'court',
                     'created_by', 'created_on']
     list_filter = ['case_type', 'case_status', 'court', 'created_by']
@@ -68,7 +68,6 @@ admin.site.register(Case, CaseAdmin)
 
 
 class CaseProceedingAdmin(admin.ModelAdmin):
-    # values: document_id, document_name, document_type, filed_by, filed_as, filed_on, confidentiality, case, editors, content
     list_display = ['document_id', 'document_name', 'document_type', 'filed_by', 'filed_as', 'filed_on',
                     'confidentiality']
     list_filter = ['document_type', 'filed_by', 'filed_as', 'confidentiality', 'case']
@@ -86,7 +85,6 @@ admin.site.register(CaseProceeding, CaseProceedingAdmin)
 
 
 class ReliefAdmin(admin.ModelAdmin):
-    # values: participant, court, relief_type, verdict and value.
     list_display = ['participant', 'court', 'relief_type', 'verdict', 'value']
     list_filter = ['participant', 'court', 'relief_type', 'verdict']
     search_fields = ['participant__username', 'court__name', 'relief_type', 'verdict']
@@ -102,19 +100,6 @@ admin.site.register(Relief, ReliefAdmin)
 
 
 class InvoiceAdmin(admin.ModelAdmin):
-    # model values are:
-    #
-    # invoice_id = models.CharField(max_length=30, unique=True)
-    # invoice_type = models.CharField(max_length=30, choices=INVOICE_TYPES, default='miscellaneous')
-    # invoice_status = models.CharField(max_length=30, choices=INVOICE_STATUS, default='pending')
-    # invoice_amount = models.IntegerField()
-    # invoice_date = models.DateField(auto_now_add=True)
-    # invoice_due_date = models.DateField()
-    # case_proceeding = models.ForeignKey(CaseProceeding, on_delete=models.CASCADE)
-    # created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    # created_on = models.DateTimeField(auto_now_add=True, null=True)
-    # relieved_by = models.ForeignKey(Relief, on_delete=models.CASCADE)
-
     list_display = ['invoice_id', 'invoice_type', 'invoice_status', 'invoice_amount', 'invoice_date',
                     'invoice_due_date', 'case_proceeding', 'created_by', 'created_on', 'relieved_by']
     list_filter = ['invoice_type', 'invoice_status', 'case_proceeding', 'created_by', 'relieved_by']
@@ -131,6 +116,24 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Invoice, InvoiceAdmin)
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount',
+                    'payment_status', 'receipt_no', 'created_on', 'ip_address', 'paid_for', 'paid_by', 'invoice']
+    list_filter = ['payment_status', 'paid_for', 'paid_by', 'invoice']
+    search_fields = ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount',
+                     'payment_status', 'receipt_no', 'created_on', 'ip_address', 'paid_for', 'paid_by', 'invoice']
+    list_per_page = 20
+    ordering = ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount', 'payment_status',
+                'receipt_no', 'created_on', 'ip_address', 'paid_for', 'paid_by', 'invoice']
+    fieldsets = [
+        ('Transaction Information', {
+            'fields': ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount', 'payment_status', 'receipt_no', 'ip_address', 'paid_for', 'paid_by', 'invoice']}),
+    ]
+
+
+admin.site.register(Transaction, TransactionAdmin)
 
 
 class ContactAdmin(admin.ModelAdmin):

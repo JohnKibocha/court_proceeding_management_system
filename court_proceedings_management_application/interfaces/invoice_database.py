@@ -41,7 +41,6 @@ class InvoiceDatabase(InvoiceInterface):
         invoice.users.add(user, through_defaults={'role': role})
         invoice.save()
 
-
     def get_invoice_by_case_id(self, case_id):
         return Invoice.objects.filter(case_id=case_id)
 
@@ -57,3 +56,5 @@ class InvoiceDatabase(InvoiceInterface):
     def get_invoice_by_amount(self, amount):
         return Invoice.objects.filter(amount=amount)
 
+    def get_invoice_by_case_proceeding(self, case_proceeding):
+        return Invoice.objects.filter(case_proceeding=case_proceeding)
