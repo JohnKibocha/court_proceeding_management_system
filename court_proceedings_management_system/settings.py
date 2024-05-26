@@ -22,13 +22,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
+# Env variables
+env = environ.Env(DEBUG=(bool, False))
+# reading .env file
+environ.Env.read_env()
+
+# Mpesa variables
+MPESA_ENVIRONMENT = 'sandbox'
+MPESA_CONSUMER_KEY = '0HkrPRfJVpIEod6n5ijHEg3Gc0ce0kiQP56sFHMEGKABKguL'
+MPESA_CONSUMER_SECRET = 'wQbjD1mkg39vxAiCITrwAXgJF5mgzyJkh70y1FUSc9Q3FOBqCCCRzmBtZimOZ01R'
+MPESA_SHORTCODE = '174379'
+MPESA_EXPRESS_SHORTCODE = '174379'
+MPESA_SHORTCODE_TYPE = 'paybill'
+MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
+MPESA_INITIATOR_USERNAME = 'testapi'
+MPESA_INITIATOR_SECURITY_CREDENTIAL = 'Safaricom999!*!'
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5ldr3)05fn^-ss24cm5^gb4=y#%^bt1@+0@1=tes)o1urm0#@0'
+SECRET_KEY = 'h!8YMkxLzxNy9HXxMa!CRRtJGddKX$zQp85m7rX$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'courtix.pythonanywhere.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'courtixsoftware.pythonanywhere.com']
 
 # Application definition
 
@@ -41,10 +57,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'court_proceedings_management_application.apps.CourtProceedingsManagementApplicationConfig',
     'phonenumber_field',
+    'environ',
     'ckeditor',
+    'ckeditor_uploader',
     'reportlab',
     'xhtml2pdf',
     'error_code',
+    'django_daraja',
 ]
 
 MIDDLEWARE = [
@@ -123,11 +142,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = (
-    BASE_DIR / 'static',
-)
+STATICFILES_DIRS = (BASE_DIR / 'static',)  # comment this out during deployment
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # comment this out during deployment
 MEDIA_URL = '/media/'
 
 # Default primary key field type
@@ -137,16 +154,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'court_proceedings_management_application.User'
 
 # Email settings using test email backend
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_USE_TLS = False
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
-# command to run email server
-# python -m smtpd -n -c DebuggingServer localhost:1025
 
 # CKEditor settings
 CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_RESTRICT_BY_USER = False
 
 CKEDITOR_CONFIGS = {
     'default': {
@@ -173,8 +191,3 @@ CKEDITOR_CONFIGS = {
         'autoGrow_maxHeight': 150,
     },
 }
-
-# Env variables
-env = environ.Env(DEBUG=(bool, False))
-# reading .env file
-environ.Env.read_env()

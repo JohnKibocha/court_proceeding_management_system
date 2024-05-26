@@ -238,28 +238,28 @@ class Case(models.Model):
     )
 
     DECISION_CHOICES = (
-        ('dismissed', 'Dismissed'),
-        ('upheld', 'Upheld'),
+        ('pending', 'Pending'),
+        ('dismissal', 'Dismissal'),
+        ('uphelding', 'Uphelding'),
         ('overturned', 'Overturned'),
-        ('compensated', 'Compensated'),
-        ('acquitted', 'Acquitted'),
-        ('convicted', 'Convicted'),
-        ('sentenced', 'Sentenced'),
-        ('fined', 'Fined'),
-        ('imprisoned', 'Imprisoned'),
+        ('compensation', 'Compensation'),
+        ('acquital', 'Acquital'),
+        ('conviction', 'Conviction'),
+        ('sentence', 'Sentence'),
+        ('fine', 'Fine'),
+        ('imprisonment', 'Imprisonment'),
         ('community service', 'Community Service'),
         ('probation', 'Probation'),
         ('parole', 'Parole'),
         ('suspended sentence', 'Suspended Sentence'),
         ('death penalty', 'Death Penalty'),
         ('life imprisonment', 'Life Imprisonment'),
-        ('acquitted', 'Acquitted'),
-        ('discharged', 'Discharged'),
-        ('reprimanded', 'Reprimanded'),
-        ('warned', 'Warned'),
-        ('rehabilitated', 'Rehabilitated'),
+        ('acquital', 'Acquital'),
+        ('discharge', 'Discharge'),
+        ('reprimand', 'Reprimand'),
+        ('warning', 'Warning'),
+        ('rehabilitation', 'Rehabilitation'),
         ('restitution', 'Restitution'),
-        ('compensation', 'Compensation'),
         ('damages', 'Damages'),
         ('injunction', 'Injunction'),
         ('restraining order', 'Restraining Order'),
@@ -280,7 +280,7 @@ class Case(models.Model):
     observers = models.ManyToManyField(User, related_name='observers', blank=True)
     case_description = models.TextField(blank=True, null=True)
     relief_sought = models.TextField(blank=True, null=True)
-    decision = models.TextField(blank=True, null=True, choices=DECISION_CHOICES)
+    decision = models.TextField(blank=True, null=True, choices=DECISION_CHOICES, default='pending')
     date_filed = models.DateField()
     date_hearing = models.DateField()
     court = models.ForeignKey(Court, on_delete=models.CASCADE)
@@ -308,28 +308,28 @@ class Relief(models.Model):
     )
 
     VERDICT_CHOICES = (
-        ('dismissed', 'Dismissed'),
-        ('upheld', 'Upheld'),
+        ('pending', 'Pending'),
+        ('dismissal', 'Dismissal'),
+        ('uphelding', 'Uphelding'),
         ('overturned', 'Overturned'),
-        ('compensated', 'Compensated'),
-        ('acquitted', 'Acquitted'),
-        ('convicted', 'Convicted'),
-        ('sentenced', 'Sentenced'),
-        ('fined', 'Fined'),
-        ('imprisoned', 'Imprisoned'),
+        ('compensation', 'Compensation'),
+        ('acquital', 'Acquital'),
+        ('conviction', 'Conviction'),
+        ('sentence', 'Sentence'),
+        ('fine', 'Fine'),
+        ('imprisonment', 'Imprisonment'),
         ('community service', 'Community Service'),
         ('probation', 'Probation'),
         ('parole', 'Parole'),
         ('suspended sentence', 'Suspended Sentence'),
         ('death penalty', 'Death Penalty'),
         ('life imprisonment', 'Life Imprisonment'),
-        ('acquitted', 'Acquitted'),
-        ('discharged', 'Discharged'),
-        ('reprimanded', 'Reprimanded'),
-        ('warned', 'Warned'),
-        ('rehabilitated', 'Rehabilitated'),
+        ('acquital', 'Acquital'),
+        ('discharge', 'Discharge'),
+        ('reprimand', 'Reprimand'),
+        ('warning', 'Warning'),
+        ('rehabilitation', 'Rehabilitation'),
         ('restitution', 'Restitution'),
-        ('compensation', 'Compensation'),
         ('damages', 'Damages'),
         ('injunction', 'Injunction'),
         ('restraining order', 'Restraining Order'),
@@ -339,7 +339,7 @@ class Relief(models.Model):
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
     court = models.ForeignKey(Court, on_delete=models.CASCADE)
     relief_type = models.CharField(max_length=10, choices=RELIEF_TYPES)
-    verdict = models.CharField(max_length=255, choices=VERDICT_CHOICES)
+    verdict = models.CharField(max_length=255, choices=VERDICT_CHOICES, default='pending')
     case_proceeding = models.ForeignKey('CaseProceeding', on_delete=models.CASCADE)
     value = models.IntegerField()
 
@@ -349,6 +349,7 @@ class Relief(models.Model):
 
 class CaseProceeding(models.Model):
     DOCUMENT_TYPES = (
+        ('application', 'Application'),
         ('evidence', 'Evidence'),
         ('order', 'Order'),
         ('report', 'Report'),
@@ -443,6 +444,7 @@ class Invoice(models.Model):
     case_proceeding = models.ForeignKey(CaseProceeding, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+    transaction = models.ForeignKey('Transaction', on_delete=models.CASCADE, related_name='invoice_payment', blank=True, null=True, default='')
     relieved_by = models.ForeignKey(Relief, on_delete=models.CASCADE, null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -456,6 +458,28 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f' {self.invoice_id} (KES {self.invoice_amount})'
+
+
+class PaymentQueue(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('complete', 'Complete'),
+        ('failed', 'Failed')
+    )
+    checkout_request_id = models.CharField(max_length=200)
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    account_reference = models.CharField(max_length=200, blank=True, null=True)
+    transaction_description = models.CharField(max_length=255, blank=True, null=True)
+    amount = models.CharField(max_length=10)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    created_on = models.DateTimeField(auto_now_add=True)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='payment_queue', blank=True, null=True,
+                                default='')
+    transaction = models.ForeignKey('Transaction', on_delete=models.CASCADE, related_name='payment_queue', blank=True,
+                                    null=True, default='')
+
+    def __str__(self):
+        return f'Payment for {self.checkout_request_id} - {self.amount}'
 
 
 # function to generate unique transaction numbers for each transaction
@@ -505,19 +529,19 @@ class Transaction(models.Model):
     )
 
     transaction_no = models.CharField(max_length=50, unique=True)
-    phone_number = PhoneNumberField(null=False, blank=False)
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
     checkout_request_id = models.CharField(max_length=200)
-    reference = models.CharField(max_length=40, blank=True)
+    mpesa_reference = models.CharField(max_length=40, blank=True)
     description = models.TextField(null=True, blank=True)
+    participant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='participant_transaction', default='', null=True, blank=True)
     amount = models.CharField(max_length=10)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=1)
-    payment_status = models.CharField(max_length=15, choices=PAYMENT_STATUS_CHOICES, default='pending')
-    receipt_no = models.CharField(max_length=200, blank=True, null=True)
+    payment_status = models.CharField(max_length=15, choices=PAYMENT_STATUS_CHOICES, default='complete')
+    receipt_id = models.CharField(max_length=200, blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    ip_address = models.CharField(max_length=200, blank=True, null=True)
-    paid_for = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoice_recepient', default='')
-    paid_by = models.CharField(max_length=200, blank=True, null=True)
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='invoice', default='')
+    paid_for = models.CharField(max_length=200, blank=True, null=True, default='DEFENDANT')
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='invoice', blank=True, null=True,
+                                default='')
 
     def __str__(self):
         return f'Transaction {self.transaction_no} - {self.amount}'
@@ -538,6 +562,13 @@ class Transaction(models.Model):
                     else:
                         digit_seq = next_digit_sequence(digit_seq)
                 self.transaction_no = letter_seq + digit_seq + two_letter_seq
+
+        if not self.receipt_id:
+            last_receipt = Transaction.objects.all().order_by('-id').first()
+            if last_receipt is None:
+                self.receipt_id = 'RCT-0001'
+            else:
+                self.receipt_id = 'RCT-%04d' % (last_receipt.id + 1)
 
         if self.status == 1:
             self.invoice.invoice_status = 'paid'

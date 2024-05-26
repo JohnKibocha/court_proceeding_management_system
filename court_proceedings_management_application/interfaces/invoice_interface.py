@@ -14,6 +14,10 @@ class InvoiceInterface(ABC):
         pass
 
     @abstractmethod
+    def get_invoice_by_invoice_id(self, invoice_id):
+        pass
+
+    @abstractmethod
     def get_all_invoices(self):
         pass
 
@@ -45,7 +49,7 @@ class InvoiceInterface(ABC):
         pass
 
     @abstractmethod
-    def get_invoice_by_user_id(self, user_id):
+    def get_invoice_by_participant(self, participant):
         pass
 
     @abstractmethod
@@ -63,4 +67,3 @@ class InvoiceInterface(ABC):
     @abstractmethod
     def get_invoice_by_case_proceeding(self, case_proceeding):
         pass
-

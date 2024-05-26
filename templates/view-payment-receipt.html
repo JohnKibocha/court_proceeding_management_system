@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block tab_title %} {% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="../static/icons/favicon.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            padding: 16px;
+            margin: 20px auto;
+            max-width: 800px; /* Limiting width for better readability */
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        .invoice-header {
+            text-align: center; /* Center align invoice header */
+            margin-bottom: 20px;
+        }
+
+        .invoice-title {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; /* Ensure logo displays correctly */
+        }
+
+        .secondary-logo-container {
+        {#    hide #} display: none;
+        }
+
+        .document-view-container {
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+            font-size: medium;
+            max-width: 800px; /* Limiting width for better readability */
+            margin: 0 auto; /* Center align the content */
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        .invoice-table {
+            margin-top: 20px;
+        }
+
+        .material-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .material-table th,
+        .material-table td {
+            padding: 8px; /* Adjust padding for table cells */
+            text-align: left;
+            border-bottom: 1px solid #cccccc;
+            background: white;
+            font-family: "Roboto", sans-serif;
+            font-weight: normal;
+            font-size: medium;
+        }
+
+        .material-table th {
+            background-color: #5A5A5A;
+            color: white;
+            font-weight: bold;
+        }
+
+        .material-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .document-disclaimer,
+        .document-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: small;
+        }
+
+        .document-footer img {
+            width: 50px;
+            height: 50px;
+        }
+
+
+        @media print {
+            .container {
+                display: none;
+            }
+
+            logo-container {
+                display: none;
+            }
+
+            .secondary-logo-container {
+                text-align: center;
+                margin-bottom: 20px;
+                display: block;
+            }
+
+            .secondary-logo-container img {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%; /* Ensure logo displays correctly */
+            }
+
+        }
+
+        .invoice-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, .15);
+            font-size: 16px;
+            line-height: 24px;
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #555;
+        }
+
+        .invoice-box table {
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+        }
+
+        /* Buttons*/
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .container {
+            width: 80%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+
+        .btn-success {
+            background: #4caf50;
+        }
+
+        .invoice-box table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .invoice-box table tr td:nth-child(2) {
+            text-align: right;
+        }
+
+        .invoice-box table tr.top table td {
+            padding-bottom: 20px;
+        }
+
+        .invoice-box table tr.top table td.title {
+            font-size: 45px;
+            line-height: 45px;
+            color: #333;
+        }
+
+        .invoice-box table tr.information table td {
+            padding-bottom: 40px;
+        }
+
+        .invoice-box table tr.heading td {
+            background: #eee;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+
+        .invoice-box table tr.details td {
+            padding-bottom: 20px;
+        }
+
+        .invoice-box table tr.item td {
+            border-bottom: 1px solid #eee;
+        }
+
+        .invoice-box table tr.item.last td {
+            border-bottom: none;
+        }
+
+        .invoice-box table tr.total td:nth-child(2) {
+            border-top: 2px solid #eee;
+            font-weight: bold;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .invoice-box table tr.top table td {
+                width: 100%;
+                display: block;
+                text-align: center;
+            }
+
+            .invoice-box table tr.information table td {
+                width: 100%;
+                display: block;
+                text-align: center;
+            }
+        }
+
+        /** RTL **/
+        .rtl {
+            direction: rtl;
+            font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        }
+
+        .rtl table {
+            text-align: right;
+        }
+
+        .rtl table tr td:nth-child(2) {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<article aria-label="main-content">
+    <div class="main-container">
+        <div class="document-view-container">
+            <div class="logo-container">
+                {% if court.court_logo %}
+                    <img src="{{ court.court_logo.url }}" alt="Court Logo">
+                {% else %}
+                    <img src="../static/images/default_court.png" alt="Court Logo">
+                {% endif %}
+
+            </div>
+            <div class="secondary-logo-container"><img src="{{ court_logo_path }}" alt=""></div>
+
+            <div class="invoice-header">
+                <h1>{{ court.name | upper }}</h1>
+                <h2 class="invoice-title">COURT PAYMENT RECEIPT</h2>
+                <p><strong>Receipt Number:</strong> {{ payment.receipt_id }}</p>
+            </div>
+            <hr>
+            <div class="court-info">
+                <p><strong>Court Address:</strong> {{ court.court_address }}</p>
+                <p><strong>Court Phone:</strong> {{ court.court_phone }}</p>
+                <p><strong>Court Email:</strong> {{ court.court_email }}</p>
+            </div>
+            <hr>
+            <div class="invoice-info">
+                <p><strong>Invoice Date:</strong> {{ invoice.invoice_date }}</p>
+                <p><strong>Invoice Due Date:</strong> {{ invoice.invoice_due_date }}</p>
+                <p><strong>Invoice Type:</strong> {{ invoice.invoice_type |capfirst }}</p>
+                <p><strong>Invoice Amount:</strong> KES {{ invoice.invoice_amount }}</p>
+                <p><strong>Invoice Description:</strong> Payment Due for {{ verdict }} Verdict in the
+                    case {{ invoice.case_proceeding.case.case_name }}</p>
+            </div>
+            <hr>
+            <div class="payment-info">
+                <p><strong>Payment Type:</strong> {{ verdict }}</p>
+                <p><strong>Payment Method:</strong> MPESA</p>
+                <p><strong>Paid For:</strong> {{ payment.paid_for }}</p>
+                <p><strong>MPESA Reference ID:</strong> {{ payment.mpesa_reference }}</p>
+                <p><strong>Payment Date:</strong> {{ payment.created_on }}</p>
+            </div>
+            <hr>
+            <div class="invoice-table">
+                <table class="material-table">
+                    <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount Due</th>
+                        <th>Amount Paid</th>
+                        <th>Balance</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            Payment for {{ verdict }} Verdict in the
+                            case {{ invoice.case_proceeding.case.case_name }}
+                        </td>
+                        <td><strong>KES {{ invoice_amount }}</strong></td>
+                        <td><strong>KES {{ amount_paid }}</strong></td>
+                        <td><strong>KES {{ balance }}</strong></td>
+                    </tr>
+
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tax</strong></td>
+                        <td><strong>KES {{ tax_due }}</strong></td>
+                        <td><strong>KES {{ tax_paid }}</strong></td>
+                        <td><strong>KES {{ tax_balance }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td><strong>KES {{ total_due }}</strong></td>
+                        <td><strong>KES {{ total_paid }}</strong></td>
+                        <td><strong>KES {{ total_balance }}</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br>
+            <hr>
+
+            <div class="document-disclaimer">
+                <p>This receipt is issued as a confirmation of your payment of the <strong>{{ verdict |capfirst }}</strong> verdict in
+                    the <strong> {{ invoice.case_proceeding.case.case_name }} Case </strong> of case
+                    number <strong> {{ invoice.case_proceeding.case.case_id }}</strong>. This payment is in compliance with the
+                    court judgement and no further action is required from your side. If you have any
+                    questions or concerns, please contact the court clerk. Thank you for your payment.</p>
+            </div>
+            <div class="document-footer">
+                <img src="../static/icons/courtix_logo.png" alt="Courtix Logo">
+                <p>Powered by Courtix Kenya Ltd.</p>
+                <p>Developed by John Muturi Kibocha. All rights reserved.</p>
+                <p> Copyright 2024 &copy; </p>
+            </div>
+        </div>
+    </div>
+</article>
+<div class="container">
+    <a class="btn btn-success" href="{% url 'download-payment-receipt' payment_id=payment.id %}" id="download-button">
+        <i class="fa fa-download"></i> Download Receipt
+    </a>
+</div>
+</body>
+</html>
+

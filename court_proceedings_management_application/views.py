@@ -1,25 +1,25 @@
 import json
 import logging
+import math
 from datetime import datetime
 from io import BytesIO
 
 from django.contrib import messages
-from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LogoutView
 from django.core.files.storage import FileSystemStorage
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, request
+from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import html
+from django.utils.decorators import method_decorator
 from django.views import View
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
+from django_daraja.mpesa.core import MpesaClient
 from xhtml2pdf import pisa
 
 from court_proceedings_management_application.forms import CaseProceedingForm
@@ -30,8 +30,7 @@ from court_proceedings_management_application.interfaces.clerk_service import Cl
 from court_proceedings_management_application.interfaces.contact_service import ContactService
 from court_proceedings_management_application.interfaces.court_service import CourtService
 from court_proceedings_management_application.interfaces.invoice_service import InvoiceService
-from court_proceedings_management_application.interfaces.mpesa.mpesa_checkout_serializer import MpesaCheckoutSerializer
-from court_proceedings_management_application.interfaces.mpesa.mpesa_gateway import MpesaGateWay
+from court_proceedings_management_application.interfaces.payment_queue_service import PaymentQueueService
 from court_proceedings_management_application.interfaces.payment_service import PaymentService
 from court_proceedings_management_application.interfaces.registration_service import RegistrationService
 from court_proceedings_management_application.interfaces.user_service import UserDoesNotExist
@@ -40,7 +39,6 @@ from court_proceedings_management_application.models import Contact
 
 
 ## system-wide views
-
 class IndexView(View):
 
     def __init__(self, *args, **kwargs):
@@ -70,7 +68,8 @@ class ContactView(View):
         self.contact_service = ContactService()
 
     def get(self, request):
-        return render(request, 'index.html')
+        created_on = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return render(request, 'index.html', {'created_on': created_on})
 
     def post(self, request):
         # handle contact form submission
@@ -83,9 +82,8 @@ class ContactView(View):
                 message=request.POST['message'],
                 phone=request.POST['phone'] if 'phone' in request.POST else None
             )
-            # send email
-            self.contact_service.save_contact(contact)
 
+            contact = self.contact_service.save_contact(contact)
             messages.success(request, 'Your message has been sent successfully', extra_tags='toast')
         return render(request, 'index.html')
 
@@ -314,21 +312,26 @@ class AdminCreateClerkView(View):
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
 
-        try:
-            clerks = self.user_service.get_user_by_role('clerk')
-        except:
-            clerks = None
-            messages.error(request, 'No clerks found in the database', extra_tags='toast')
+        # if no court in the database, redirect to create court with a message
+        if len(court_objects) == 0:
+            messages.error(request, 'No courts found in the database. Please create a court first', extra_tags='toast')
+            return redirect('admin-create-court')
+        else:
+            try:
+                clerks = self.user_service.get_user_by_role('clerk')
+            except:
+                clerks = None
+                messages.error(request, 'No clerks found in the database', extra_tags='toast')
 
-        context = {
-            'counties': counties,
-            'tribes': tribes,
-            'court_objects': court_objects,
-            'user_info': user_info,
-            'clerks': clerks
-        }
+            context = {
+                'counties': counties,
+                'tribes': tribes,
+                'court_objects': court_objects,
+                'user_info': user_info,
+                'clerks': clerks
+            }
 
-        return render(request, 'admin-create-clerk.html', context)
+            return render(request, 'admin-create-clerk.html', context)
 
     def post(self, request):
         if request.method == 'POST':
@@ -704,21 +707,26 @@ class AdminCreateJudgeView(View):
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
 
-        try:
-            judges = self.user_service.get_user_by_role('judge')
-        except:
-            clerks = None
-            messages.error(request, 'No judges found in the database', extra_tags='toast')
+        # if no court in the database, redirect to create court with a message
+        if len(court_objects) == 0:
+            messages.error(request, 'No courts found in the database. Please create a court first', extra_tags='toast')
+            return redirect('admin-create-court')
+        else:
+            try:
+                judges = self.user_service.get_user_by_role('judge')
+            except:
+                clerks = None
+                messages.error(request, 'No judges found in the database', extra_tags='toast')
 
-        context = {
-            'counties': counties,
-            'tribes': tribes,
-            'court_objects': court_objects,
-            'user_info': user_info,
-            'judges': judges
-        }
+            context = {
+                'counties': counties,
+                'tribes': tribes,
+                'court_objects': court_objects,
+                'user_info': user_info,
+                'judges': judges
+            }
 
-        return render(request, 'admin-create-judge.html', context)
+            return render(request, 'admin-create-judge.html', context)
 
     def post(self, request):
         if request.method == 'POST':
@@ -1007,7 +1015,12 @@ class ClerkCreateParticipantView(View):
             'court_objects': court_objects
         }
 
-        return render(request, 'clerk-create-participant.html', context)
+        # if no court in the database, redirect to create court with a message
+        if len(court_objects) == 0:
+            messages.error(request, 'No courts found in the database. Please create a court first', extra_tags='toast')
+            return redirect('admin-create-court')
+        else:
+            return render(request, 'clerk-create-participant.html', context)
 
     def post(self, request):
         if request.method == 'POST':
@@ -1432,10 +1445,14 @@ class CreateCaseProceedingView(View):
             case_proceeding.confidentiality = document_confidentiality
             case_proceeding.save()
 
+
+
             # Handle reliefs
             for i in range(1, 9):  # Iterate over numbers from 1 to 8
                 participant_id = request.POST.get(f'participant_{i}')
                 verdict = request.POST.get(f'verdict_{i}')
+                case.decision = verdict
+                case.save()
                 relief_type = request.POST.get(f'relief_type_{i}')
                 value = request.POST.get(f'value_{i}')
 
@@ -1601,9 +1618,15 @@ class ManageInvoiceView(View):
 
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
-        invoices = self.invoice_service.get_all_invoices()
 
+        # each signed-in user should only see their invoices except for the clerk
+        # the participants in the invoice should be checked against the logged in user, if any of the participants is logged in user, the invoice should be displayed
+        if user_info.role == 'clerk':
+            invoices = self.invoice_service.get_all_invoices()
+        else:
+            invoices = self.invoice_service.get_invoice_by_participant(user)
         payments = self.payment_service.get_all_payments()
+
         for payment in payments:
             if payment.invoice is not None:
                 invoice = self.invoice_service.get_invoice_by_id(payment.invoice.id)
@@ -1624,6 +1647,12 @@ class ManageInvoiceView(View):
             else:
                 invoice.invoice_status = 'paid'
                 invoice.save()
+
+        # add a 16% tax on all invoice amounts
+        for invoice in invoices:
+            invoice.invoice_amount = math.ceil(invoice.invoice_amount * 1.16)
+            invoice.invoice_amount = float(invoice.invoice_amount)
+            invoice.invoice_amount = "{:.2f}".format(invoice.invoice_amount)
 
         context = {
             'user_info': user_info,
@@ -1807,6 +1836,8 @@ class ViewInvoiceView(View):
         # calculate the tax and total amount
         tax = invoice.invoice_amount * 0.16
         grand_total = invoice.invoice_amount * 1.16
+        # convert the grand total to an integer.
+        grand_total = math.ceil(grand_total)
 
         # Format the numbers with commas as thousand separators
         invoice.invoice_amount = "{:,}".format(invoice.invoice_amount)
@@ -1844,6 +1875,11 @@ class DownloadInvoiceView(View):
         verdict = self.case_proceeding_service.get_relief_by_case_proceeding(case_proceeding).first().verdict
         tax = invoice.invoice_amount * 0.16
         grand_total = invoice.invoice_amount * 1.16
+
+        grand_total = invoice.invoice_amount * 1.16
+        # convert the grand total to an integer.
+        grand_total = math.ceil(grand_total)
+
         invoice.invoice_amount = "{:,}".format(invoice.invoice_amount)
         tax = "{:,}".format(tax)
         grand_total = "{:,}".format(grand_total)
@@ -1885,36 +1921,6 @@ class DownloadInvoiceView(View):
         return response
 
 
-# Mpesa API Views
-
-gateway = MpesaGateWay()
-
-
-@authentication_classes([])
-@permission_classes((AllowAny,))
-class MpesaCheckout(APIView):
-    serializer = MpesaCheckoutSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer(data=request.POST)
-        if serializer.is_valid(raise_exception=True):
-            payload = {"data": serializer.validated_data, "request": request}
-            res = gateway.stk_push_request(payload)
-            return Response(res, status=200)
-
-
-@authentication_classes([])
-@permission_classes((AllowAny,))
-class MpesaCallBack(APIView):
-    def get(self, request):
-        return Response({"status": "OK"}, status=200)
-
-    def post(self, request, *args, **kwargs):
-        logging.info("{}".format("Callback from MPESA"))
-        data = request.body
-        return gateway.callback(json.loads(data))
-
-
 # Payment Views
 class ManagePaymentView(View):
     def __init__(self, *args, **kwargs):
@@ -1928,13 +1934,21 @@ class ManagePaymentView(View):
 
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
-        payments = self.payment_service.get_all_payments()
+        # each signed-in user should only see their payment except for the clerk
+        if user_info.role == 'clerk':
+            payments = self.payment_service.get_all_payments()
+        else:
+            payments = self.payment_service.get_payment_by_participant(user)
+
+        for payment in payments:
+            # convert the base 10 (eg. 2.0) to a float of 2dp (eg. 2.00)
+            payment.amount = float(payment.amount)
+            payment.amount = "{:.2f}".format(payment.amount)
 
         context = {
             'user_info': user_info,
             'payments': payments
         }
-
         return render(request, 'manage-payment.html', context)
 
 
@@ -1944,86 +1958,240 @@ class CreatePaymentView(View):
         self.payment_service = PaymentService()
         self.user_service = UserService()
         self.invoice_service = InvoiceService()
-        self.mpesa_checkout = MpesaCheckout()
+        self.payment_queue_service = PaymentQueueService()
+
+    def get(self, request, invoice_id):
+        user = request.user
+        user_info = self.user_service.get_user_info(user.username)
+        invoice_no = self.invoice_service.get_invoice_by_id(invoice_id).invoice_id
+        invoice_amount = self.invoice_service.get_invoice_by_id(invoice_id).invoice_amount
+        # take the invoice amount as a float, add a 0.16 tax and convert it to an integer
+        invoice_amount = math.ceil(invoice_amount * 1.16)
+        defendant_name = user_info.first_name.upper() + ' ' + user_info.last_name.upper()
+        defendant_phone = user_info.phone_number
+        invoice_date = self.invoice_service.get_invoice_by_id(invoice_id).invoice_date
+        account_reference = f'{invoice_no}'
+        description = f'Payment of {invoice_no} for the judgement against {defendant_name} on {invoice_date}.'
+        invoice = self.invoice_service.get_invoice_by_id(invoice_id)
+        context = {
+            'user_info': user_info,
+            'invoice_amount': invoice_amount,
+            'invoice_no': invoice_no,
+            'defendant_name': defendant_name,
+            'defendant_phone': defendant_phone,
+            'invoice_date': invoice_date,
+            'account_reference': account_reference,
+            'description': description,
+            'invoice': invoice
+        }
+        return render(request, 'create-payment.html', context)
 
     def post(self, request, invoice_id):
-        phone_number = request.POST.get('phone_number')
-        amount = request.POST.get('amount')
-        reference = request.POST.get('reference')
-        description = request.POST.get('description')
+        invoice = self.invoice_service.get_invoice_by_id(invoice_id)
+        defendant_phone = request.POST.get('defendant_phone')
+        defendant_name = request.POST.get('defendant_name')
+        formatted_phone_number = ''.join(e for e in defendant_phone if e.isalnum())
+        # remove the 0 and add 254
+        formatted_phone_number = '254' + formatted_phone_number[1:]
+        invoice_amount = request.POST.get('invoice_amount')
+        formatted_invoice_amount = int(invoice_amount.replace(',', ''))
+        account_reference = request.POST.get('account_reference')
+        transaction_description = request.POST.get('description')
 
-        # Prepare the payload for the Mpesa API
-        payload = {
-            "phone_number": phone_number,
-            "amount": amount,
-            "reference": reference,
-            "description": description,
-        }
+        # initiate mpesa stk_push
+        mpesa_client = MpesaClient()
+        phone_number = formatted_phone_number
+        amount = formatted_invoice_amount
+        account_reference = account_reference
+        transaction_desc = transaction_description
+        callback_url = 'https://courtixsoftware.pythonanywhere.com/callback/'
+        response = mpesa_client.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
 
-        # Send the payment request to the Mpesa API
-        res = self.mpesa_checkout.post(request, data=payload)
+        parsed_response = response.json()
 
-        def get_client_ip(request):
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                ip = x_forwarded_for.split(',')[0]
-            else:
-                ip = request.META.get('REMOTE_ADDR')
-            return ip
-
-        # Check if the request was successful
-        if res.status_code == 200:
-            try:
-                # Parse the response JSON
-                res_json = res.json()
-
-                # Check if the response code is '0' indicating success
-                if res_json.get('ResponseCode') == '0':
-                    # Payment successful, create a payment object and save it to the database
-                    payment_data = {
-                        "transaction_no": res_json.get('CheckoutRequestID'),
-                        "phone_number": phone_number,
-                        "checkout_request_id": res_json.get('CheckoutRequestID'),
-                        "reference": reference,
-                        "description": description,
-                        "amount": amount,
-                        "status": 0,  # Pending
-                        "payment_status": 'pending',
-                        "receipt_no": None,
-                        "created_on": datetime.now(),
-                        "ip_address": get_client_ip(request),
-                        "paid_for": request.user.upper(),
-                        "paid_by": res_json.get('CustomerName', 'Defendant').upper(),
-                        "invoice": self.invoice_service.get_invoice_by_id(invoice_id),
-                    }
-                    self.payment_service.create_payment(**payment_data)
-                    messages.success(request, 'Payment processed successfully', extra_tags='toast')
-                else:
-                    # Payment failed, handle accordingly
-                    messages.error(request, 'Payment failed: {}'.format(res_json.get('errorMessage', 'Unknown error')), extra_tags='toast')
-            except ValueError:
-                # Error parsing JSON response
-                messages.error(request, 'Error parsing Mpesa response', extra_tags='toast')
+        if parsed_response.get('ResponseCode') == '0':
+            self.payment_queue_service.create_payment_queue(
+                checkout_request_id=parsed_response['CheckoutRequestID'],
+                phone_number=phone_number,
+                amount=amount,
+                account_reference=account_reference,
+                transaction_description=transaction_desc,
+                status='complete',
+                invoice=invoice
+            )
+            messages.success(request, 'Please Enter your MPESA pin to complete your transaction', extra_tags='toast')
+            return redirect('manage-payment')
         else:
-            # Request failed
-            messages.error(request, 'Error processing payment: {}'.format(res.text), extra_tags='toast')
+            messages.error(request, 'Failed to initiate payment', extra_tags='toast')
+        return redirect('manage-invoice')
 
-        return redirect('manage-payment')
+
+logger = logging.getLogger(__name__)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MpesaCallbackView(View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payment_queue_service = PaymentQueueService()
+        self.payment_service = PaymentService()
+        self.invoice_service = InvoiceService()
+
+    def parse_data(self, data):
+        try:
+            callback_data = data['Body']['stkCallback']
+            checkout_request_id = callback_data['CheckoutRequestID']
+            result_code = callback_data['ResultCode']
+            result_desc = callback_data['ResultDesc']
+            metadata = callback_data.get('CallbackMetadata', {}).get('Item', [])
+
+            callback_details = {item['Name']: item.get('Value') for item in metadata}
+            amount = callback_details.get('Amount')
+            mpesa_receipt_number = callback_details.get('MpesaReceiptNumber')
+            transaction_date = callback_details.get('TransactionDate')
+            phone_number = callback_details.get('PhoneNumber')
+
+            return {
+                'checkout_request_id': checkout_request_id,
+                'result_code': result_code,
+                'result_desc': result_desc,
+                'amount': amount,
+                'mpesa_receipt_number': mpesa_receipt_number,
+                'transaction_date': transaction_date,
+                'phone_number': phone_number,
+            }
+        except KeyError as e:
+            logger.error("Key error: %s", str(e))
+            return None
+
+    def handle_callback(self, data):
+        details = self.parse_data(data)
+        if not details:
+            return HttpResponse('Bad Request: Invalid data', status=400)
+
+        checkout_request_id = details['checkout_request_id']
+        result_code = details['result_code']
+        result_desc = details['result_desc']
+        amount = details['amount']
+        mpesa_receipt_number = details['mpesa_receipt_number']
+        transaction_date = details['transaction_date']
+        phone_number = details['phone_number']
+
+        if result_code == 0:
+            payment_queue = self.payment_queue_service.get_payment_queue_by_checkout_request_id(checkout_request_id)
+            if not payment_queue:
+                logger.error("No payment queue found for checkout_request_id: %s", checkout_request_id)
+                return HttpResponse('Internal Server Error', status=500)
+
+            invoice = payment_queue.invoice
+            if not invoice:
+                logger.error("No invoice found in payment queue for checkout_request_id: %s", checkout_request_id)
+                return HttpResponse('Internal Server Error', status=500)
+
+            if not invoice.participant:
+                logger.error("No participant associated with the invoice for checkout_request_id: %s",
+                             checkout_request_id)
+                return HttpResponse('Internal Server Error', status=500)
+
+            transaction = self.payment_service.create_payment(
+                phone_number=phone_number,
+                checkout_request_id=checkout_request_id,
+                mpesa_reference=mpesa_receipt_number,
+                description=payment_queue.transaction_description,
+                amount=amount,
+                status=1,
+                participant=invoice.participant,  # Ensure participant is assigned correctly
+                paid_for=f'{invoice.participant.first_name} {invoice.participant.last_name}',
+                invoice=invoice
+            )
+
+            payment_queue.transaction = transaction
+            payment_queue.save()
+            messages.success(request, 'Payment received successfully', extra_tags='toast')
+            return HttpResponse('Payment received successfully')
+        else:
+            payment_queue = self.payment_queue_service.get_payment_queue_by_checkout_request_id(checkout_request_id)
+            payment_queue.status = 'failed'
+            payment_queue.save()
+            messages.error(request, 'Payment failed', extra_tags='toast')
+            return HttpResponse('Payment failed')
+
+    def post(self, request):
+        try:
+            raw_body = request.body.decode('utf-8')
+            logger.info("Raw MPESA Callback data received: %s", raw_body)
+
+            if not raw_body:
+                logger.error("Empty body received in MPESA callback")
+                return HttpResponse('Bad Request: Empty body', status=400)
+
+            try:
+                data = json.loads(raw_body)
+            except json.JSONDecodeError as e:
+                logger.error("JSON decode error: %s", str(e))
+                return HttpResponse('Bad Request: Invalid JSON', status=400)
+
+            return self.handle_callback(data)
+        except Exception as e:
+            logger.error("Error processing MPESA callback: %s", str(e))
+            return HttpResponse('Internal Server Error', status=500)
 
 
 class ViewPaymentReceiptView(View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.payment_service = PaymentService()
+        self.invoice_service = InvoiceService()
         self.user_service = UserService()
+        self.case_proceeding_service = CaseProceedingService()
+        self.case = CaseService()
 
     def get(self, request, payment_id):
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
+        invoice = self.payment_service.get_payment_by_id(payment_id).invoice
+        case_proceeding = self.case_proceeding_service.get_case_proceeding_by_id(invoice.case_proceeding.id)
+        case = self.case.get_case_by_id(case_proceeding.case.id)
+        court = case.court
+        # calculate the tax and total amount
         payment = self.payment_service.get_payment_by_id(payment_id)
+        tax_due = math.ceil(float(invoice.invoice_amount) * 0.16)
+        tax_paid = float(payment.amount) - float(invoice.invoice_amount)
+        tax_balance = tax_due - tax_paid
+        amount_paid = (float(payment.amount) - math.ceil(tax_due))
+        verdict = self.case_proceeding_service.get_relief_by_case_proceeding(case_proceeding).first().verdict
+        balance = ((float(payment.amount) - math.ceil(tax_due)) - float(invoice.invoice_amount))
+        total_due = float(invoice.invoice_amount) + tax_due
+        total_paid = float(payment.amount)
+        total_balance = total_due - total_paid
+
+        # Format the numbers with commas as thousand separators and 2 decimal places
+        formatted_invoice_amount = "{:,.2f}".format(invoice.invoice_amount)
+        formatted_tax_due = "{:,.2f}".format(tax_due)
+        formatted_tax_paid = "{:,.2f}".format(tax_paid)
+        formatted_amount_paid = "{:,.2f}".format(amount_paid)
+        formatted_tax_balance = "{:,.2f}".format(tax_balance)
+        formatted_total_due = "{:,.2f}".format(total_due)
+        formatted_total_paid = "{:,.2f}".format(total_paid)
+        formatted_total_balance = "{:,.2f}".format(total_balance)
+        formatted_balance = "{:,.2f}".format(balance)
         context = {
             'user_info': user_info,
-            'payment': payment
+            'payment': payment,
+            'invoice': invoice,
+            'case_proceeding': case_proceeding,
+            'case': case,
+            'court': court,
+            'tax_due': formatted_tax_due,
+            'tax_paid': formatted_tax_paid,
+            'amount_paid': formatted_amount_paid,
+            'invoice_amount': formatted_invoice_amount,
+            'tax_balance': formatted_tax_balance,
+            'verdict': verdict,
+            'balance': formatted_balance,
+            'total_due': formatted_total_due,
+            'total_paid': formatted_total_paid,
+            'total_balance': formatted_total_balance
         }
         return render(request, 'view-payment-receipt.html', context)
 
@@ -2032,30 +2200,81 @@ class DownloadPaymentReceiptView(View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.payment_service = PaymentService()
+        self.invoice_service = InvoiceService()
         self.user_service = UserService()
+        self.case_proceeding_service = CaseProceedingService()
+        self.case = CaseService()
 
     def get(self, request, payment_id):
         user = request.user
         user_info = self.user_service.get_user_info(user.username)
+        invoice = self.payment_service.get_payment_by_id(payment_id).invoice
+        case_proceeding = self.case_proceeding_service.get_case_proceeding_by_id(invoice.case_proceeding.id)
+        case = self.case.get_case_by_id(case_proceeding.case.id)
+        court = case.court
+        # calculate the tax and total amount
         payment = self.payment_service.get_payment_by_id(payment_id)
+        tax_due = math.ceil(float(invoice.invoice_amount) * 0.16)
+        tax_paid = float(payment.amount) - float(invoice.invoice_amount)
+        tax_balance = tax_due - tax_paid
+        amount_paid = (float(payment.amount) - math.ceil(tax_due))
+        verdict = self.case_proceeding_service.get_relief_by_case_proceeding(case_proceeding).first().verdict
+        balance = ((float(payment.amount) - math.ceil(tax_due)) - float(invoice.invoice_amount))
+        total_due = float(invoice.invoice_amount) + tax_due
+        total_paid = float(payment.amount)
+        total_balance = total_due - total_paid
+
+        # Format the numbers with commas as thousand separators and 2 decimal places
+        formatted_invoice_amount = "{:,.2f}".format(invoice.invoice_amount)
+        formatted_tax_due = "{:,.2f}".format(tax_due)
+        formatted_tax_paid = "{:,.2f}".format(tax_paid)
+        formatted_amount_paid = "{:,.2f}".format(amount_paid)
+        formatted_tax_balance = "{:,.2f}".format(tax_balance)
+        formatted_total_due = "{:,.2f}".format(total_due)
+        formatted_total_paid = "{:,.2f}".format(total_paid)
+        formatted_total_balance = "{:,.2f}".format(total_balance)
+        formatted_balance = "{:,.2f}".format(balance)
+
+        # Fetch the logo image path
+        court_logo_path = court.court_logo.path if court.court_logo else None
+
         context = {
             'user_info': user_info,
-            'payment': payment
+            'payment': payment,
+            'invoice': invoice,
+            'case_proceeding': case_proceeding,
+            'case': case,
+            'court': court,
+            'tax_due': formatted_tax_due,
+            'tax_paid': formatted_tax_paid,
+            'amount_paid': formatted_amount_paid,
+            'invoice_amount': formatted_invoice_amount,
+            'tax_balance': formatted_tax_balance,
+            'verdict': verdict,
+            'balance': formatted_balance,
+            'total_due': formatted_total_due,
+            'total_paid': formatted_total_paid,
+            'total_balance': formatted_total_balance,
+            'court_logo_path': court_logo_path,
         }
-        return render(request, 'download-payment-receipt.html', context)
 
-    def post(self, request, payment_id):
-        payment = self.payment_service.get_payment_by_id(payment_id)
-        # Create a file-like buffer to receive PDF data.
+        # Render the template with context data
+        template = get_template('view-payment-receipt.html')
+        html = template.render(context)
+
+        # Create a file-like buffer to receive PDF data
         buffer = BytesIO()
 
-        # Create the PDF object, using the buffer as its "file."
-        pisa_status = pisa.CreatePDF(payment.content, dest=buffer)
+        # Generate PDF
+        pisa_status = pisa.CreatePDF(html, dest=buffer)
 
-        # if error then show some funy view
         if pisa_status.err:
             return HttpResponse('We had some errors <pre>' + html + '</pre>')
-        buffer.seek(0)
 
-        return FileResponse(buffer, as_attachment=True,
-                            filename=f'Payment Receipt for Invoice #{payment.invoice.invoice_id}.pdf')
+        # Set response content type
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Receipt #{payment.receipt_id}.pdf"'
+
+        # Close the buffer and return the response
+        buffer.close()
+        return response

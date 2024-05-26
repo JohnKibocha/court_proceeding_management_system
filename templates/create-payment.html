@@ -18,7 +18,7 @@
     <meta property="og:site_name" content="Courtix">
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="en_GB">
-    <title>Create Payment</title>
+    <title>Make Payment</title>
     <link rel="stylesheet" href="{% static 'styles/main.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
     <script src="{% static 'scripts/main.js' %}"></script>
@@ -27,32 +27,52 @@
 
 <main>
     <section class="form-container">
-        <header>Create New Payment</header>
+        <header>Make Payment</header>
         <form id="payment-form" method="post" action="{% url 'create-payment' invoice_id=invoice.id %}">
             {% csrf_token %}
             <div class="input-box">
-                <label for="phone_number">Phone Number:</label>
-                <input type="text" id="phone_number" name="phone_number" value="{{ phone_number }}" required>
+                <label for="defendant_name">Defendant:</label>
+                <input type="text" id="defendant_name" name="defendant_name" value="{{ defendant_name }}" class="form-field form-dropdown form-font" required readonly>
             </div>
             <div class="input-box">
-                <label for="amount">Amount:</label>
-                <input type="number" id="amount" name="amount" value="KES {{ amount }}" required disabled>
+                <label for="defendant_phone">Phone Number:</label>
+                <input type="text" id="defendant_phone" name="defendant_phone" value="{{ defendant_phone }}" class="form-field form-font" required>
             </div>
             <div class="input-box">
-                <label for="reference">Reference:</label>
-                <input type="text" id="reference" name="reference" value="{{ reference }}" required>
+                <label for="invoice_amount">Amount (KES):</label>
+                <input type="number" id="invoice_amount" name="invoice_amount" value="{{ invoice_amount }}" class="form-field form-dropdown form-font" required readonly>
+            </div>
+            <div class="input-box">
+                <label for="account_reference">Reference:</label>
+                <input type="text" id="account_reference" name="account_reference" value="{{ account_reference }}" class="form-field form-dropdown form-font" required readonly>
             </div>
             <div class="input-box">
                 <label for="description">Description:</label>
-                <input type="text" id="description" name="description" value="{{ description }}" required>
+                <input type="text" id="description" name="description" value="{{ description }}" class="form-field form-dropdown form-font" required readonly>
             </div>
-            <button type="submit">Submit</button>
+            <button type="submit" class="form-field form-submit form-font">Submit</button>
         </form>
     </section>
 </main>
 
 
 <div class="toast-container">
+
+    {# show any modal messages available #}
+    <div class="modal-container">
+        <div class="modal">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'modal' in message.tags %}
+                        <script>
+                            infoDialog('{{ message }}');
+                        </script>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
     {# show any toast messages available #}
     {% if messages %}
         {% for message in messages %}

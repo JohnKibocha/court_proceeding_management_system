@@ -108,6 +108,43 @@
 
             }
         }
+
+        .info-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            position: relative;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -115,34 +152,25 @@
 
 <main>
     <div class="info-card">
-    <button class="close-btn" onclick="hideCard()">×</button>
-    <h3><strong>Note on Confidentiality Restrictions</strong></h3>
-    <p><strong>Critical:</strong> <strong>Documents marked with critical confidentiality are accessible only to clerks, and
-        judges.</strong> This designation represents the highest level of confidentiality, reserved
-        for extremely sensitive information crucial to the case.</p>
-
-    <p><strong>High:</strong> <strong>Documents with high confidentiality status can be viewed by all users, but only
-        clerks, and judges can edit or delete them.</strong> This level balances accessibility with
-        stringent control over modifications to maintain document integrity.</p>
-
-    <p><strong>Medium:</strong> <strong>Documents designated with medium confidentiality status can be viewed by all users,
-        and participants or lawyers associated with the case can edit them.</strong> This level fosters collaboration among
-        involved parties while restricting access to external users.</p>
-
-    <p><strong>Low:</strong> <strong>Documents labeled with low confidentiality status are accessible to all users for
-        viewing and editing purposes.</strong> This level applies to non-sensitive information intended for public access or
-        general reference.</p>
-    <br>
-    <p class="warning"><i class="fas fa-exclamation-circle" style="color: gold"></i> <strong>Warning: If you do not meet the
-        criteria for a given confidentiality level, you may end up losing access to the document. The document is
-        not available to the creator by default.</strong></p>
-    <br>
-</div>
+        <button class="close-btn" onclick="hideCard()">×</button>
+        <h3><strong>Confidentiality Restrictions</strong></h3>
+        <p><strong>Critical:</strong> Accessible only to clerks and judges. Reserved for extremely sensitive
+            information.</p>
+        <p><strong>High:</strong> Viewable by all users, but only clerks and judges can edit or delete.</p>
+        <p><strong>Medium:</strong> Viewable by all users; participants and lawyers can edit.</p>
+        <p><strong>Low:</strong> Accessible to all users for viewing and editing.</p>
+        <div class="warning">
+            <i class="fas fa-exclamation-circle" style="color: gold"></i>
+            <strong>Warning:</strong> If you do not meet the criteria for a confidentiality level, you may lose access
+            to the document. Creators do not have default access.
+        </div>
+    </div>
 
     <section class="ckeditor-form-container">
         <header>Edit Case Proceeding</header>
         <div class="">
-            <form action="{% url 'edit-case-proceeding' case_proceeding_id=case_proceeding.id %}" method="post" class="form"
+            <form action="{% url 'edit-case-proceeding' case_proceeding_id=case_proceeding.id %}" method="post"
+                  class="form"
                   enctype="multipart/form-data">
                 {% csrf_token %}
                 <h2>Document Details</h2>
@@ -164,13 +192,15 @@
                 <div class="input-row">
 
                     <div class="input-box">
-                        <input type="text" value="{{ case_proceeding.document_name }}" name="document_name" placeholder="Plaintiff v Defendant" required
+                        <input type="text" value="{{ case_proceeding.document_name }}" name="document_name"
+                               placeholder="Plaintiff v Defendant" required
                                class="form-field form-font"/>
                     </div>
 
                     <div class="input-box">
                         <select name="document_type" class="form-field form-dropdown form-font">
-                            <option value="{{ case_proceeding.document_type }}" disabled selected>Select document type</option>
+                            <option value="{{ case_proceeding.document_type }}" disabled selected>Select document type
+                            </option>
                             {% for document_type in document_types %}
                                 <option value="{{ document_type.0 }}">{{ document_type.1 }}</option>
                             {% endfor %}
@@ -179,7 +209,9 @@
 
                     <div class="input-box">
                         <select name="document_confidentiality" class="form-field form-dropdown form-font">
-                            <option value="{{ case_proceeding.confidentiality }}" disabled selected>Select document confidentiality</option>
+                            <option value="{{ case_proceeding.confidentiality }}" disabled selected>Select document
+                                confidentiality
+                            </option>
                             {% for document_confidentiality in document_confidentialities %}
                                 <option value="{{ document_confidentiality.0 }}">{{ document_confidentiality.1 }}</option>
                             {% endfor %}
@@ -234,12 +266,12 @@
                     {% endfor %}
                     <br>
                 {% endif %}
-            <div>
-                <div class="ckeditor-editor-container">
-                    {{ form.content }}
-                    {{ form.media }}
+                <div>
+                    <div class="ckeditor-editor-container">
+                        {{ form.content }}
+                        {{ form.media }}
+                    </div>
                 </div>
-            </div>
                 <button type="submit" class="form-field form-submit form-font">Submit</button>
             </form>
         </div>

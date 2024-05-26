@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class PaymentInterface(ABC):
     # Payment creation methods
     @abstractmethod
@@ -19,8 +20,11 @@ class PaymentInterface(ABC):
     def get_payment_by_case_id(self, case_id):
         pass
 
+    @abstractmethod
+    def get_payment_by_participant(self, participant):
+        pass
+
     # Payment deletion methods
     @abstractmethod
     def delete_payment(self, payment):
         pass
-

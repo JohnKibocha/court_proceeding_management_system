@@ -13,6 +13,9 @@ class InvoiceService(InvoiceInterface):
     def get_invoice_by_id(self, invoice_id):
         return self.invoice_database.get_invoice_by_id(invoice_id)
 
+    def get_invoice_by_invoice_id(self, invoice_id):
+        return self.invoice_database.get_invoice_by_invoice_id(invoice_id)
+
     def get_all_invoices(self):
         return self.invoice_database.get_all_invoices()
 
@@ -34,8 +37,8 @@ class InvoiceService(InvoiceInterface):
     def get_invoice_by_case_id(self, case_id):
         return self.invoice_database.get_invoice_by_case_id(case_id)
 
-    def get_invoice_by_user_id(self, user_id):
-        return self.invoice_database.get_invoice_by_user_id(user_id)
+    def get_invoice_by_participant(self, participant):
+        return self.invoice_database.get_invoice_by_participant(participant)
 
     def get_invoice_by_status(self, status):
         return self.invoice_database.get_invoice_by_status(status)

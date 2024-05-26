@@ -71,10 +71,7 @@ urlpatterns = [
 
 
     # manage payments
-    # mpesa
-    path("checkout/", views.MpesaCheckout.as_view(), name="checkout"),
-    path("callback/", views.MpesaCallBack.as_view(), name="callback"),
-
+    path("callback/", views.MpesaCallbackView.as_view(), name="callback"),
     path('manage-payment', views.ManagePaymentView.as_view(), name='manage-payment'),
     path('create-payment/<int:invoice_id>', views.CreatePaymentView.as_view(), name='create-payment'),
     path('view-payment-receipt/<int:payment_id>', views.ViewPaymentReceiptView.as_view(), name='view-payment-receipt'),

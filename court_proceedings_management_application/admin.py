@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from court_proceedings_management_application.models import User, Contact, Court, Case, CaseProceeding, Relief, Invoice, \
-    Transaction
+    Transaction, PaymentQueue
 
 
 # Register your models here.
@@ -101,8 +101,8 @@ admin.site.register(Relief, ReliefAdmin)
 
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['invoice_id', 'invoice_type', 'invoice_status', 'invoice_amount', 'invoice_date',
-                    'invoice_due_date', 'case_proceeding', 'created_by', 'created_on', 'relieved_by']
-    list_filter = ['invoice_type', 'invoice_status', 'case_proceeding', 'created_by', 'relieved_by']
+                    'invoice_due_date', 'case_proceeding', 'created_by', 'created_on', 'transaction', 'relieved_by']
+    list_filter = ['invoice_type', 'invoice_status', 'case_proceeding', 'created_by', 'transaction', 'relieved_by']
     search_fields = ['invoice_id', 'invoice_type', 'invoice_status', 'case_proceeding__document_name',
                      'created_by__username', 'relieved_by__participant__username']
     list_per_page = 20
@@ -110,26 +110,51 @@ class InvoiceAdmin(admin.ModelAdmin):
                 'created_by__username', 'relieved_by__participant__username']
     fieldsets = [
         ('Invoice Information', {
-            'fields': ['invoice_id', 'invoice_type', 'invoice_status', 'invoice_amount', 'invoice_date',
-                       'invoice_due_date', 'case_proceeding', 'created_by', 'relieved_by']}),
+            'fields': ['invoice_id', 'invoice_type', 'invoice_status', 'invoice_amount',
+                       'invoice_due_date', 'case_proceeding', 'created_by', 'transaction', 'relieved_by']}),
     ]
 
 
 admin.site.register(Invoice, InvoiceAdmin)
 
 
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount',
-                    'payment_status', 'receipt_no', 'created_on', 'ip_address', 'paid_for', 'paid_by', 'invoice']
-    list_filter = ['payment_status', 'paid_for', 'paid_by', 'invoice']
-    search_fields = ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount',
-                     'payment_status', 'receipt_no', 'created_on', 'ip_address', 'paid_for', 'paid_by', 'invoice']
+class PaymentQueueAdmin(admin.ModelAdmin):
+    # values: checkout_request_id, phone_number, account_reference, amount, status, created_on, invoice, transaction
+    list_display = ['checkout_request_id', 'phone_number', 'account_reference', 'transaction_description', 'amount', 'status', 'created_on',
+                    'invoice', 'transaction']
+    list_filter = ['status', 'invoice', 'transaction', 'transaction_description']
+    search_fields = ['checkout_request_id', 'phone_number', 'account_reference', 'amount', 'status', 'created_on',
+                     'invoice', 'transaction']
     list_per_page = 20
-    ordering = ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount', 'payment_status',
-                'receipt_no', 'created_on', 'ip_address', 'paid_for', 'paid_by', 'invoice']
+    ordering = ['checkout_request_id', 'phone_number', 'account_reference', 'amount', 'status', 'created_on', 'invoice',
+                'transaction']
+
+    fieldsets = [
+        ('Payment Queue Information', {
+            'fields': ['checkout_request_id', 'phone_number', 'account_reference', 'transaction_description', 'amount', 'status',
+                       'invoice', 'transaction']
+        }),
+    ]
+
+
+admin.site.register(PaymentQueue, PaymentQueueAdmin)
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ['transaction_no', 'phone_number', 'checkout_request_id', 'mpesa_reference', 'description', 'participant', 'amount',
+                    'payment_status', 'receipt_id', 'created_on', 'paid_for', 'invoice']
+    list_filter = ['payment_status', 'paid_for', 'invoice']
+    search_fields = ['transaction_no', 'phone_number', 'checkout_request_id', 'mpesa_reference', 'description',
+                     'amount',
+                     'payment_status', 'receipt_id', 'created_on', 'paid_for', 'invoice']
+    list_per_page = 20
+    ordering = ['transaction_no', 'phone_number', 'checkout_request_id', 'mpesa_reference', 'description', 'amount',
+                'payment_status',
+                'receipt_id', 'created_on', 'paid_for', 'invoice']
     fieldsets = [
         ('Transaction Information', {
-            'fields': ['transaction_no', 'phone_number', 'checkout_request_id', 'reference', 'description', 'amount', 'payment_status', 'receipt_no', 'ip_address', 'paid_for', 'paid_by', 'invoice']}),
+            'fields': ['transaction_no', 'phone_number', 'checkout_request_id', 'mpesa_reference', 'description',  'participant',
+                       'amount', 'payment_status', 'receipt_id', 'paid_for', 'invoice']}),
     ]
 
 

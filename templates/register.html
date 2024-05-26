@@ -175,27 +175,27 @@
         
             <div class="input-box">
                 <label>First Name</label>
-                <input type="text" name="first_name" placeholder="Enter first name" required/>
+                <input type="text" class="form-field form-font" name="first_name" placeholder="Enter first name" required/>
             </div>
 
             <div class="input-box">
                 <label>Last Name</label>
-                <input type="text" name="last_name" placeholder="Enter last name" required/>
+                <input type="text" class="form-field form-font" name="last_name" placeholder="Enter last name" required/>
             </div>
 
             <div class="input-box">
                 <label>UserName</label>
-                <input type="text" name="username" placeholder="Enter username" required/>
+                <input type="text" class="form-field form-font" name="username" placeholder="Enter username" required/>
             </div>
 
             <div class="input-box">
                 <label>Email Address</label>
-                <input type="email" name="email" placeholder="Enter email address" required/>
+                <input type="email" name="email" class="form-field form-font" placeholder="Enter email address" required/>
             </div>
 
             <div class="input-box">
                 <label>Role</label>
-                <select name="role">
+                <select class="form-field form-dropdown form-font" name="role">
                     <option hidden>Role(Select a role in the case)</option>
                     <option value="participant" onclick="roleDescription()">Participant</option>
                     <option value="observer" onclick="roleDescription()">Observer</option>
@@ -205,12 +205,12 @@
             </div>
             <div class="input-box">
                 <label>National ID</label>
-                <input type="number" name="national_id" placeholder="Enter ID Number" required/>
+                <input type="number" class="form-field form-font" name="national_id" placeholder="Enter ID Number" required/>
             </div>
 
             <div class="input-box">
                 <label>County of Residence</label>
-                <select name="county_of_residence">
+                <select class="form-field form-font" name="county_of_residence">
                     {% for county in counties %}
                         <option value="{{ county.0 }}">{{ county.1 }}</option>
                     {% endfor %}
@@ -220,7 +220,7 @@
 
             <div class="input-box">
                 <label>Nationality/Tribe</label>
-                <select name="tribe">
+                <select class="form-field form-dropdown form-font" name="tribe">
                     {% for tribe in tribes %}
                         <option value="{{ tribe.0 }}">{{ tribe.1 }}</option>
                     {% endfor %}
@@ -230,11 +230,11 @@
             <div class="column">
                 <div class="input-box">
                     <label>Phone Number</label>
-                    <input type="number" name="phone_number" placeholder="Enter phone number" required/>
+                    <input type="number" class="form-field form-font" name="phone_number" placeholder="Enter phone number" required/>
                 </div>
                 <div class="input-box">
                     <label>Birth Date</label>
-                    <input type="date" name="date_of_birth" placeholder="Enter birth date" required/>
+                    <input type="date" class="form-field form-font" name="date_of_birth" placeholder="Enter birth date" required/>
                 </div>
             </div>
             </div>
@@ -259,36 +259,36 @@
 
             <div class="input-box">
                 <label>Postal Code</label>
-                <input type="text" name="postal_code" placeholder="Enter postal code" required/>
+                <input type="text" class="form-field form-font" name="postal_code" placeholder="Enter postal code" required/>
             </div>
 
             <div class="input-box">
                 <label>Town/City</label>
-                <input type="text" name="town_city" placeholder="Enter town/city" required/>
+                <input type="text" class="form-field form-font" name="town_city" placeholder="Enter town/city" required/>
             </div>
 
             <div class="input-box">
                 <label>Building Name</label>
-                <input type="text" name="building_name" placeholder="Enter building name"/>
+                <input type="text" class="form-field form-font" name="building_name" placeholder="Enter building name"/>
             </div>
 
             <div class="input-box">
                 <label>Floor Number</label>
-                <input type="text" name="floor_number" placeholder="Enter floor number"/>
+                <input type="text" class="form-field form-font" name="floor_number" placeholder="Enter floor number"/>
             </div>
 
             <div class="input-box">
                 <label>Street Name</label>
-                <input type="text" name="street_name" placeholder="Enter street name"/>
+                <input type="text" class="form-field form-font" name="street_name" placeholder="Enter street name"/>
             </div>
 
             <div class="input-box">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="Enter password" required/>
+                <input type="password" class="form-field form-font" name="password" placeholder="Enter password" required/>
             </div>
             <div class="input-box">
                 <label>Confirm Password</label>
-                <input type="password" name="confirm_password" placeholder="Confirm password" required/>
+                <input type="password" class="form-field form-font" name="confirm_password" placeholder="Confirm password" required/>
             </div>
             <button>Submit</button>
         </form>

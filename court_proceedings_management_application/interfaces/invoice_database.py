@@ -19,6 +19,12 @@ class InvoiceDatabase(InvoiceInterface):
         except:
             raise InvoiceDoesNotExist(f'Invoice with id {invoice_id} does not exist')
 
+    def get_invoice_by_invoice_id(self, invoice_id):
+        try:
+            return Invoice.objects.get(invoice_id=invoice_id)
+        except:
+            raise InvoiceDoesNotExist(f'Invoice with invoice id {invoice_id} does not exist')
+
     def get_all_invoices(self):
         return Invoice.objects.all()
 
@@ -44,8 +50,8 @@ class InvoiceDatabase(InvoiceInterface):
     def get_invoice_by_case_id(self, case_id):
         return Invoice.objects.filter(case_id=case_id)
 
-    def get_invoice_by_user_id(self, user_id):
-        return Invoice.objects.filter(users__id=user_id)
+    def get_invoice_by_participant(self, participant):
+        return Invoice.objects.filter(participant=participant)
 
     def get_invoice_by_status(self, status):
         return Invoice.objects.filter(status=status)

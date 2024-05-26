@@ -26,7 +26,7 @@
                 <table class="material-table">
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Transaction ID</th>
                         <th>Phone </th>
                         <th>Reference</th>
                         <th>Description</th>
@@ -34,7 +34,6 @@
                         <th>Status</th>
                         <th>Created On</th>
                         <th>Paid For</th>
-                        <th>Paid By</th>
                         <th>Invoice</th>
                         <th>Actions</th>
                     </tr>
@@ -44,16 +43,15 @@
                         <tr class="clickable-row"
                             onclick="window.location='{% url 'view-payment-receipt' payment_id=payment.id %}'">
                             <td>{{ payment.transaction_no }}</td>
-                            <td>{{ payment.phone_number }}</td>
-                            <td>{{ payment.reference }}</td>
+                            <td>{{ user_info.phone_number }}</td>
+                            <td>{{ payment.mpesa_reference }}</td>
                             <td>{{ payment.description | truncatechars_html:20 }}</td>
-                            <td>{{ payment.amount }}/= </td>
+                            <td>KES {{ payment.amount }}</td>
                             <td>{{ payment.payment_status | capfirst }}</td>
                             <td>{{ payment.created_on }}</td>
                             <td>{{ payment.paid_for }}</td>
-                            <td>{{ payment.paid_by }}</td>
-                            <td>{{ payment.invoice }}</td>
-                            
+                            <td>{{ payment.invoice.invoice_id }}</td>
+
                             <td>
                                 <a class="btn btn-warning btn-secondary-action"
                                    href="{% url 'view-payment-receipt' payment_id=payment.id %}"
@@ -68,6 +66,23 @@
     {% endblock %}
 </article>
 
+
+{# show any modal messages available #}
+<div class="modal-container">
+    <div class="modal">
+        {% if messages %}
+            {% for message in messages %}
+                {% if 'modal' in message.tags %}
+                    <script>
+                        infoDialog('{{ message }}');
+                    </script>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+
 <div class="container">
     {# show any toast messages available #}
     {% if messages %}
@@ -80,5 +95,9 @@
     {% endif %}
 </div>
 
+<script>
+    {# refresh automatically every 2 seconds #}
+    
+</script>
 
 </html>

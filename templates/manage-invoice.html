@@ -50,20 +50,23 @@
                                 <td> - </td>
                             {% endif %}
                             <td>{{ invoice.invoice_status | capfirst}}</td>
-                            <td>{{ invoice.invoice_amount }}</td>
+                            <td>KES {{ invoice.invoice_amount}}</td>
                             <td>{{ invoice.invoice_date }}</td>
                             <td>{{ invoice.invoice_due_date }}</td>
                             <td>{{ invoice.case_proceeding | capfirst}}</td>
                             <td>{{ invoice.created_by | capfirst}}</td>
                             <td>{{ invoice.created_on }}</td>
                             <td>
-                            
-                            {% if user_info.role == 'participant' or user_info.role == 'lawyer' %}
-                                <a class="btn btn-primary btn-secondary-action"
-                                   href="{% url 'create-payment' invoice_id=invoice.id %}"
-                                   onclick="event.stopPropagation();"><i
-                                        class="fas fa-money-bill"></i> Pay</a>
-                            {% endif %}
+
+                                {% if user_info.role == 'participant' or user_info.role == 'lawyer' %}
+                                    {# check if the invoice has been paid in the invoice status#}
+                                    {% if not invoice.invoice_status == 'paid' %}
+                                        <a class="btn btn-success btn-secondary-action"
+                                           href="{% url 'create-payment' invoice_id=invoice.id %}"
+                                           onclick="event.stopPropagation();"><i
+                                                class="fas fa-receipt"></i> Pay</a>
+                                    {% endif %}
+                                {% endif %}
                                 <a class="btn btn-warning btn-secondary-action"
                                    href="{% url 'view-invoice' invoice_id=invoice.id %}"
                                    onclick="event.stopPropagation();"><i

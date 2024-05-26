@@ -151,7 +151,7 @@
             text-decoration: none;
             font-size: 18px;
         }
-        
+
         .container {
             width: 80%;
             overflow: hidden;
@@ -271,7 +271,7 @@
             <div class="invoice-info">
                 <p><strong>Invoice Date:</strong> {{ invoice.invoice_date }}</p>
                 <p><strong>Invoice Due Date:</strong> {{ invoice.invoice_due_date }}</p>
-                <p><strong>Invoice Type:</strong> {{ invoice.invoice_type }}</p>
+                <p><strong>Invoice Type:</strong> {{ invoice.invoice_type |capfirst }}</p>
             </div>
             <hr>
             <div class="participant-info">
@@ -298,7 +298,7 @@
                             case {{ invoice.case_proceeding.case.case_name }}
                         </td>
                         <td>&nbsp;</td>
-                        <td>{{ invoice.invoice_amount }}</td>
+                        <td><strong>KES {{ invoice.invoice_amount }}</strong></td>
                     </tr>
                     <tr>
                         <td>&nbsp;</td>
@@ -314,17 +314,17 @@
                     <tr>
                         <td><strong>Subtotal</strong></td>
                         <td>&nbsp;</td>
-                        <td><strong>{{ invoice.invoice_amount }}</strong></td>
+                        <td><strong>KES {{ invoice.invoice_amount }}</strong></td>
                     </tr>
                     <tr>
                         <td><strong>Tax</strong></td>
                         <td>&nbsp;</td>
-                        <td><strong>{{ tax }}</strong></td>
+                        <td><strong>KES {{ tax }}</strong></td>
                     </tr>
                     <tr>
                         <td><strong>Grand Total</strong></td>
                         <td>&nbsp;</td>
-                        <td><strong>{{ grand_total }}</strong></td>
+                        <td><strong>KES {{ grand_total }}</strong></td>
                     </tr>
                     </tbody>
                 </table>
@@ -332,10 +332,10 @@
             <br>
             <hr>
             <div class="document-disclaimer">
-                <p>This invoice is in reference to the court judgement for
-                    the <strong> {{ invoice.case_proceeding.case.case_name }} Case </strong> with case
+                <p>This invoice is in reference to the <strong>{{ verdict |capfirst }}</strong> verdict in
+                    the <strong> {{ invoice.case_proceeding.case.case_name }} Case </strong> of case
                     number <strong> {{ invoice.case_proceeding.case.case_id }}</strong>. Please pay the full amount
-                    by {{ invoice.invoice_due_date }} to avoid further penalties. You can pay by Mobile Money, cheque,
+                    by <strong>{{ invoice.invoice_due_date }}</strong> to avoid further penalties. You can pay by Mobile Money, cheque,
                     credit card, or bank transfer. Thank you for your cooperation.</p>
             </div>
             <div class="document-footer">
