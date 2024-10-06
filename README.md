@@ -112,6 +112,9 @@ The Case Proceedings Management System is a web-based software solution designed
     ```
   - Ensure that you allow less secure apps in your Gmail settings by visiting [https://myaccount.google.com/lesssecureapps](https://myaccount.google.com/lesssecureapps)
 
+## Limitations
+In order to access the MPESA API, the application needs to be hosted on a live server with a public IP address. The MPESA API requires a secure connection (HTTPS) and a publicly accessible endpoint to send and receive payment notifications. Therefore, the MPESA payment functionality will not work in a local development environment.
+
 ## Contact Developer
 
 For any inquiries or assistance regarding the Case Proceedings Management System, please contact the developer at [johnkibocha@outlook.com](mailto:johnkibocha@outlook.com).
